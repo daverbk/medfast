@@ -1,2 +1,2 @@
 # medfast-be
-Backend repository for MedFast app
+Backend repository for MedFast project
