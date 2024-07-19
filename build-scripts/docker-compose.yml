@@ -1,0 +1,24 @@
+name: medfast
+services:
+  postgresql:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: medfast
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: secret
+      SERVER_PORT: 5432
+    ports:
+      - "5432:5432"
+
+  backend:
+    image: medfast:latest
+    depends_on:
+      - postgresql
+    environment:
+      SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql:5432/medfast
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: secret
+      MAIL_PASSWORD: "pyne podv rskn cqof"
+    ports:
+      - "8080:8080"

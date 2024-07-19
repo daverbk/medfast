@@ -1,3 +1,58 @@
 spring:
+
   application:
     name: medfast
+
+  # DB Properties
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/medfast}
+    username: ${DB_USERNAME:user}
+    password: ${DB_PASSWORD:secret}
+
+  liquibase:
+    change-log: db/changelog/changelog-root.yaml
+
+  # Mail Configuration
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: healflow.automation@gmail.com
+    password: ${MAIL_PASSWORD:pass}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            required: true
+            enable: true
+
+# JWT
+token:
+  timeout:
+    access: 3600
+    refresh: 7200
+  signing:
+    key: 0e3d01d7c4f45a1e8df9c5d0937a0e295dfd42d15268b8ac7bf1ff66513c3ea6
+
+# Verification code
+verification:
+  code:
+    timeout: 86400
+
+# Logging
+logging:
+  level:
+    org:
+      springframework:
+        security: debug
+        web: debug
+        mail: debug
+    web: debug
+
+server:
+  error:
+    include-stacktrace: never
+
+# Base URL
+base-url: http://localhost:3000
