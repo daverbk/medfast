@@ -5,6 +5,7 @@ import com.ventionteams.medfast.dto.request.SignUpRequest;
 import com.ventionteams.medfast.dto.response.JwtAuthenticationResponse;
 import com.ventionteams.medfast.entity.RefreshToken;
 import com.ventionteams.medfast.entity.User;
+import com.ventionteams.medfast.exception.auth.UserIsAlreadyVerifiedException;
 import com.ventionteams.medfast.service.EmailService;
 import com.ventionteams.medfast.service.UserService;
 import jakarta.mail.MessagingException;
@@ -16,6 +17,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 @Service
 @RequiredArgsConstructor
@@ -35,16 +38,21 @@ public class AuthenticationService {
         return "Email verification link has been sent to your email";
     }
 
-    public void sendVerificationEmail(String email) throws MessagingException, IOException {
-        User user = userService.getUserByEmail(email);
+    public void sendVerificationEmail(String encodedEmail) throws MessagingException, IOException {
+        String decodedEmail = URLDecoder.decode(encodedEmail, StandardCharsets.UTF_8);
+        User user = userService.getUserByEmail(decodedEmail);
         sendVerificationEmail(user);
     }
 
     public void sendVerificationEmail(User user) throws MessagingException, IOException {
+        if (user.isEnabled()) {
+            throw new UserIsAlreadyVerifiedException(user.getEmail(), "User is already verified");
+        }
+        
         verificationTokenService.addVerificationTokenForUser(user.getEmail());
         emailService.sendVerificationEmail(user);
     }
-    
+
     public JwtAuthenticationResponse signIn(SignInRequest request) {
         authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(
