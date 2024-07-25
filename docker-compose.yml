@@ -11,7 +11,8 @@ services:
       - "5432:5432"
 
   backend:
-    image: medfast:latest
+    build: .
+    image: healflowdev/medfast:latest
     depends_on:
       - postgresql
     environment:
