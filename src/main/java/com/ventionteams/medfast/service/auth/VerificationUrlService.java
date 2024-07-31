@@ -19,7 +19,7 @@ public class VerificationUrlService {
     public String generateVerificationUrl(String email) {
         String encodedEmail = URLEncoder.encode(email, StandardCharsets.UTF_8);
         VerificationToken verificationToken = verificationTokenService.getVerificationTokenByUserEmail(email);
-        return UriComponentsBuilder.fromHttpUrl(appProperties.getBasUrl()) //base-url
+        return UriComponentsBuilder.fromHttpUrl(appProperties.getBaseUrl()) //base-url
             .path("/verify")
             .queryParam("email", encodedEmail)
             .queryParam("code", verificationToken.getToken())

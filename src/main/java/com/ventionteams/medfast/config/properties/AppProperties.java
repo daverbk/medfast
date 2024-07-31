@@ -11,7 +11,7 @@ public class AppProperties {
     private SpringConfig spring;
     private TokenConfig token;
     private VerificationConfig verification;
-    private String basUrl;
+    private String baseUrl;
     @Data
     public static class SpringConfig {
         private Mail mail;
