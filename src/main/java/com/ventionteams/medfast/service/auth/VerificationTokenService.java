@@ -1,5 +1,6 @@
 package com.ventionteams.medfast.service.auth;
 
+import com.ventionteams.medfast.config.properties.AppProperties;
 import com.ventionteams.medfast.entity.User;
 import com.ventionteams.medfast.entity.VerificationToken;
 import com.ventionteams.medfast.exception.auth.TokenNotFoundException;
@@ -22,9 +23,7 @@ import java.util.UUID;
 public class VerificationTokenService {
     private final VerificationTokenRepository verificationTokenRepository;
     private final UserService userService;
-
-    @Value("${verification.code.timeout}")
-    private int validityPeriodSeconds;
+    private final AppProperties appProperties; //bean with variables from application.yml
 
     @Transactional
     public void addVerificationTokenForUser(String email) {
@@ -58,7 +57,7 @@ public class VerificationTokenService {
     public boolean validateToken(String email, String verificationToken) {
         VerificationToken token = getVerificationTokenByUserEmail(email);
         long actualValidityPeriod = Duration.between(token.getCreatedDate(), LocalDateTime.now()).getSeconds();
-        if (actualValidityPeriod > validityPeriodSeconds) {
+        if (actualValidityPeriod > appProperties.getVerification().getCode().getTimeout()) { //verification.code.timeout
             deleteVerificationToken(email);
             return false;
         }
