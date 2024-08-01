@@ -71,7 +71,7 @@ public class AuthenticationService {
         return new JwtAuthenticationResponse(
             jwt,
             refreshToken.getToken(),
-            tokenConfig.getTimeout().getAccess(),
-            tokenConfig.getTimeout().getRefresh());
+            tokenConfig.timeout().access(),
+            tokenConfig.timeout().refresh());
     }
 }

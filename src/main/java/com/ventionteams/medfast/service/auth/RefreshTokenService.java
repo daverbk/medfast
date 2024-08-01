@@ -48,13 +48,13 @@ public class RefreshTokenService {
         return new JwtAuthenticationResponse(
             jwtService.generateToken(refreshToken.getUser()),
             requestRefreshToken,
-            tokenConfig.getTimeout().getAccess(),
-            Duration.between(LocalDateTime.now(), refreshToken.getCreatedDate().plusSeconds(tokenConfig.getTimeout().getRefresh())).getSeconds()
+            tokenConfig.timeout().access(),
+            Duration.between(LocalDateTime.now(), refreshToken.getCreatedDate().plusSeconds(tokenConfig.timeout().refresh())).getSeconds()
         );
     }
 
     private void verifyExpiration(RefreshToken token) {
-        if (Duration.between(LocalDateTime.now(), token.getCreatedDate()).getSeconds() > tokenConfig.getTimeout().getRefresh()) {
+        if (Duration.between(LocalDateTime.now(), token.getCreatedDate()).getSeconds() > tokenConfig.timeout().refresh()) {
             refreshTokenRepository.delete(token);
             throw new TokenRefreshException(
                 token.getToken(),

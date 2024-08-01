@@ -55,7 +55,7 @@ public class JwtService {
             .claims(extraClaims)
             .subject(userDetails.getUsername())
             .issuedAt(Date.from(Instant.now()))
-            .expiration(Date.from(Instant.now().plusSeconds(tokenConfig.getTimeout().getAccess())))
+            .expiration(Date.from(Instant.now().plusSeconds(tokenConfig.timeout().access())))
             .signWith(getSigningKey())
             .compact();
     }
@@ -73,7 +73,7 @@ public class JwtService {
     }
 
     private SecretKey getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(tokenConfig.getSigning().getKey());
+        byte[] keyBytes = Decoders.BASE64.decode(tokenConfig.signing().key());
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }

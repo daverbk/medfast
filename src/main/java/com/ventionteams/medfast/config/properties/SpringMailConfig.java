@@ -2,5 +2,5 @@ package com.ventionteams.medfast.config.properties;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties
-public record AppConfig(String baseUrl) {}
+@ConfigurationProperties(prefix = "spring.mail")
+public record SpringMailConfig(String username) {}
