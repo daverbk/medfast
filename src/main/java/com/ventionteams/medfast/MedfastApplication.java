@@ -1,12 +1,11 @@
 package com.ventionteams.medfast;
 
-import com.ventionteams.medfast.config.properties.AppProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
 @SpringBootApplication
-@EnableConfigurationProperties(AppProperties.class)
+@ConfigurationPropertiesScan("com.ventionteams.medfast.config.properties")
 public class MedfastApplication {
 
     public static void main(String[] args) {
