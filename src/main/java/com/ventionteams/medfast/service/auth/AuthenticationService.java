@@ -1,5 +1,6 @@
 package com.ventionteams.medfast.service.auth;
 
+import com.ventionteams.medfast.config.properties.TokenConfig;
 import com.ventionteams.medfast.dto.request.SignInRequest;
 import com.ventionteams.medfast.dto.request.SignUpRequest;
 import com.ventionteams.medfast.dto.response.JwtAuthenticationResponse;
@@ -30,6 +31,7 @@ public class AuthenticationService {
     private final EmailService emailService;
     private final AuthenticationManager authenticationManager;
     private final VerificationTokenService verificationTokenService;
+    private final TokenConfig tokenConfig;
 
     public String signUp(SignUpRequest request) throws MessagingException, IOException {
         request.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -48,7 +50,6 @@ public class AuthenticationService {
         if (user.isEnabled()) {
             throw new UserIsAlreadyVerifiedException(user.getEmail(), "User is already verified");
         }
-        
         verificationTokenService.addVerificationTokenForUser(user.getEmail());
         emailService.sendVerificationEmail(user);
     }
@@ -70,7 +71,7 @@ public class AuthenticationService {
         return new JwtAuthenticationResponse(
             jwt,
             refreshToken.getToken(),
-            jwtService.getExpirationSeconds(),
-            refreshTokenService.getExpirationSeconds());
+            tokenConfig.timeout().access(),
+            tokenConfig.timeout().refresh());
     }
 }
