@@ -1,6 +1,6 @@
 package com.ventionteams.medfast.service.auth;
 
-import com.ventionteams.medfast.config.properties.VerificationCodeConfig;
+import com.ventionteams.medfast.config.properties.VerificationConfig;
 import com.ventionteams.medfast.entity.User;
 import com.ventionteams.medfast.entity.VerificationToken;
 import com.ventionteams.medfast.exception.auth.TokenNotFoundException;
@@ -22,7 +22,7 @@ import java.util.UUID;
 public class VerificationTokenService {
     private final VerificationTokenRepository verificationTokenRepository;
     private final UserService userService;
-    private final VerificationCodeConfig verificationCodeConfig;
+    private final VerificationConfig verificationConfig;
 
     @Transactional
     public void addVerificationTokenForUser(String email) {
@@ -56,7 +56,7 @@ public class VerificationTokenService {
     public boolean validateToken(String email, String verificationToken) {
         VerificationToken token = getVerificationTokenByUserEmail(email);
         long actualValidityPeriod = Duration.between(token.getCreatedDate(), LocalDateTime.now()).getSeconds();
-        if (actualValidityPeriod > verificationCodeConfig.timeout()) {
+        if (actualValidityPeriod > verificationConfig.code().timeout()) {
             deleteVerificationToken(email);
             return false;
         }

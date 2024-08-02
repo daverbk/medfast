@@ -1,6 +1,6 @@
 package com.ventionteams.medfast.service;
 
-import com.ventionteams.medfast.config.properties.SpringMailConfig;
+import com.ventionteams.medfast.config.properties.SpringConfig;
 import com.ventionteams.medfast.entity.User;
 import com.ventionteams.medfast.service.auth.VerificationUrlService;
 import jakarta.mail.MessagingException;
@@ -22,20 +22,20 @@ public class EmailService {
     private final JavaMailSender emailSender;
     private final TemplateEngine templateEngine;
     private final VerificationUrlService verificationUrlService;
-    private final SpringMailConfig springMailConfig;
+    private final SpringConfig springConfig;
 
     public void sendVerificationEmail(User user) throws MessagingException, IOException {
         Context context = new Context();
         context.setVariable("userName", user.getName());
         context.setVariable("verificationLink", verificationUrlService.generateVerificationUrl(user.getEmail()));
-        context.setVariable("medfastMailbox", springMailConfig.username());
+        context.setVariable("medfastMailbox", springConfig.mail().username());
 
         String content = templateEngine.process("verification_email", context);
 
         MimeMessage message = emailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message);
 
-        helper.setFrom(springMailConfig.username());
+        helper.setFrom(springConfig.mail().username());
         helper.setTo(user.getEmail());
         helper.setSubject("Complete Your Registration on Medfast");
         helper.setText(content, true);
