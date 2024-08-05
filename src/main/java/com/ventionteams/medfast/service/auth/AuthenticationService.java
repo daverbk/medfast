@@ -1,5 +1,6 @@
 package com.ventionteams.medfast.service.auth;
 
+import com.ventionteams.medfast.config.properties.TokenConfig;
 import com.ventionteams.medfast.dto.request.SignInRequest;
 import com.ventionteams.medfast.dto.request.SignUpRequest;
 import com.ventionteams.medfast.dto.response.JwtAuthenticationResponse;
@@ -13,8 +14,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.mail.MailAuthenticationException;
@@ -33,25 +32,21 @@ public class AuthenticationService {
     private final EmailService emailService;
     private final AuthenticationManager authenticationManager;
     private final VerificationTokenService verificationTokenService;
+    private final TokenConfig tokenConfig;
 
 
     @Transactional(rollbackFor={ MessagingException.class, IOException.class})
     public String signUp(SignUpRequest request) throws MessagingException, IOException {
         request.setPassword(passwordEncoder.encode(request.getPassword()));
         User user = userService.create(request);
-        sendVerificationEmail(user);
+        sendVerificationEmail(user.getEmail());
         return "Email verification link has been sent to your email";
     }
 
-    public void sendVerificationEmail(String encodedEmail) throws MessagingException, IOException {
-        String decodedEmail = URLDecoder.decode(encodedEmail, StandardCharsets.UTF_8);
-        User user = userService.getUserByEmail(decodedEmail);
-        sendVerificationEmail(user);
-    }
-
-    public void sendVerificationEmail(User user) throws MessagingException, IOException {
+    public void sendVerificationEmail(String email) throws MessagingException, IOException {
+        User user = userService.getUserByEmail(email);
         if (user.isEnabled()) {
-            throw new UserIsAlreadyVerifiedException(user.getEmail(), "User is already verified");
+            throw new UserIsAlreadyVerifiedException(email, "User is already verified");
         }
         verificationTokenService.addVerificationTokenForUser(user.getEmail());
 
@@ -88,7 +83,7 @@ public class AuthenticationService {
         return new JwtAuthenticationResponse(
             jwt,
             refreshToken.getToken(),
-            jwtService.getExpirationSeconds(),
-            refreshTokenService.getExpirationSeconds());
+            tokenConfig.timeout().access(),
+            tokenConfig.timeout().refresh());
     }
 }

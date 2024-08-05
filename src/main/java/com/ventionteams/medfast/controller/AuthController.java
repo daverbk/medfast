@@ -12,9 +12,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.security.authentication.BadCredentialsException;
@@ -28,9 +30,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import java.io.IOException;
 
 @RestController
-@RequestMapping("/auth")
+@Validated
 @RequiredArgsConstructor
 @Tag(name = "Sign in")
+@RequestMapping("/auth")
 public class AuthController {
     private final AuthenticationService authenticationService;
     private final RefreshTokenService refreshTokenService;
@@ -101,7 +104,7 @@ public class AuthController {
 
     @Operation(summary = "Verify email address")
     @PostMapping("/verify")
-    public ResponseEntity<StandardizedResponse<String>> verifyUser(@RequestParam("email") String email, @RequestParam("code") String code) {
+    public ResponseEntity<StandardizedResponse<String>> verifyUser(@Email @RequestParam("email") String email, @RequestParam("code") String code) {
         StandardizedResponse<String> response;
         try {
             boolean isVerified = verificationTokenService.verify(email, code);
@@ -130,7 +133,7 @@ public class AuthController {
 
     @Operation(summary = "Request another verification email")
     @PostMapping("/reverify")
-    public ResponseEntity<StandardizedResponse<String>> reverifyUser(@RequestParam("email") String email) {
+    public ResponseEntity<StandardizedResponse<String>> reverifyUser(@Email @RequestParam("email") String email) {
         StandardizedResponse<String> response;
         try {
             authenticationService.sendVerificationEmail(email);

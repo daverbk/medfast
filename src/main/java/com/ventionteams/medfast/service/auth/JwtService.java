@@ -1,12 +1,12 @@
 package com.ventionteams.medfast.service.auth;
 
+import com.ventionteams.medfast.config.properties.TokenConfig;
 import com.ventionteams.medfast.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import lombok.Getter;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -18,13 +18,9 @@ import java.util.Map;
 import java.util.function.Function;
 
 @Service
+@RequiredArgsConstructor
 public class JwtService {
-    @Value("${token.signing.key}")
-    private String jwtSigningKey;
-
-    @Getter
-    @Value("${token.timeout.access}")
-    private int expirationSeconds;
+    private final TokenConfig tokenConfig;
 
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
@@ -59,7 +55,7 @@ public class JwtService {
             .claims(extraClaims)
             .subject(userDetails.getUsername())
             .issuedAt(Date.from(Instant.now()))
-            .expiration(Date.from(Instant.now().plusSeconds(expirationSeconds)))
+            .expiration(Date.from(Instant.now().plusSeconds(tokenConfig.timeout().access())))
             .signWith(getSigningKey())
             .compact();
     }
@@ -77,7 +73,7 @@ public class JwtService {
     }
 
     private SecretKey getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(jwtSigningKey);
+        byte[] keyBytes = Decoders.BASE64.decode(tokenConfig.signing().key());
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }
