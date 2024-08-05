@@ -23,7 +23,6 @@ import com.ventionteams.medfast.exception.auth.UserAlreadyExistsException;
 import org.springframework.security.authentication.DisabledException;
 import com.ventionteams.medfast.exception.auth.TokenNotFoundException;
 import com.ventionteams.medfast.exception.auth.UserIsAlreadyVerifiedException;
-import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.io.IOException;
@@ -44,13 +43,13 @@ public class AuthController {
 
         try {
             String signupResponse = authenticationService.signUp(request);
-            response = StandardizedResponse.success(
+            response = StandardizedResponse.ok(
                     signupResponse,
                     HttpStatus.OK.value(),
                     "Sign up successful");
         }  catch (MessagingException | IOException |
                   MailAuthenticationException | UserAlreadyExistsException e) {
-            response = StandardizedResponse.failure(
+            response = StandardizedResponse.error(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
                     "Sign up failed. Please, try again later or contact our support team.",
                     e.getClass().getName(),
@@ -66,12 +65,12 @@ public class AuthController {
 
         try{
             JwtAuthenticationResponse authenticationResponse = authenticationService.signIn(request);
-            response = StandardizedResponse.success(
+            response = StandardizedResponse.ok(
                     authenticationResponse,
                     HttpStatus.OK.value(),
                     "Sign in successful");
         } catch (BadCredentialsException | DisabledException e) {
-            response = StandardizedResponse.failure(
+            response = StandardizedResponse.error(
                     HttpStatus.UNAUTHORIZED.value(),
                     "Provided credentials are bad or user is disabled",
                     e.getClass().getName(),
@@ -86,12 +85,12 @@ public class AuthController {
         StandardizedResponse<JwtAuthenticationResponse> response;
         try{
             JwtAuthenticationResponse refreshResponse = refreshTokenService.refreshToken(request);
-            response = StandardizedResponse.success(
+            response = StandardizedResponse.ok(
                     refreshResponse,
                     HttpStatus.OK.value(),
                     "Refreshing token successful");
         } catch (Exception e) {
-            response = StandardizedResponse.failure(
+            response = StandardizedResponse.error(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
                     "Refreshing token failed",
                     e.getClass().getName(),
@@ -107,12 +106,12 @@ public class AuthController {
         try {
             boolean isVerified = verificationTokenService.verify(email, code);
             if (isVerified) {
-                response = StandardizedResponse.success(
+                response = StandardizedResponse.ok(
                     "Your account is verified",
                     HttpStatus.OK.value(),
                     "Operation successful");
             } else {
-                response = StandardizedResponse.failure(
+                response = StandardizedResponse.error(
                     HttpStatus.BAD_REQUEST.value(),
                     "Invalid verification code",
                     null,
@@ -120,7 +119,7 @@ public class AuthController {
             }
         }
         catch (TokenNotFoundException | UsernameNotFoundException e) {
-            response = StandardizedResponse.failure(
+            response = StandardizedResponse.error(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
                     "We ran into an issue while verifying your email, try again please",
                     e.getClass().getName(),
@@ -135,13 +134,13 @@ public class AuthController {
         StandardizedResponse<String> response;
         try {
             authenticationService.sendVerificationEmail(email);
-            response = StandardizedResponse.success(
+            response = StandardizedResponse.ok(
                 "Another email has been sent to your email",
                 HttpStatus.OK.value(),
                 "Operation successful");
         } catch (MessagingException | IOException | UsernameNotFoundException
                  | MailAuthenticationException | UserIsAlreadyVerifiedException e) {
-            response = StandardizedResponse.failure(
+            response = StandardizedResponse.error(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
                     "We ran into an issue while sending another verification email, try again please",
                     e.getClass().getName(),
