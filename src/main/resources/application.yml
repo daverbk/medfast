@@ -27,10 +27,6 @@ spring:
             required: true
             enable: true
 
-  # Service configuration (dev/prod)
-  profiles:
-    active: prod
-
 # JWT
 token:
   timeout:
