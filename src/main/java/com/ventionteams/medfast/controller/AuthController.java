@@ -17,7 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-//exceptions
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.mail.MailAuthenticationException;
 import com.ventionteams.medfast.exception.auth.UserAlreadyExistsException;
@@ -45,22 +44,18 @@ public class AuthController {
 
         try {
             String signupResponse = authenticationService.signUp(request);
-            response =
-                new StandardizedResponse<>(
+            response = StandardizedResponse.success(
                     signupResponse,
                     HttpStatus.OK.value(),
                     "Sign up successful");
-        } catch (MessagingException | IOException |
-                 MailAuthenticationException | UserAlreadyExistsException e) {
-            // When MailAuthenticationException is thrown, it means that the mail is not sent but the user is created and saved in database
-            response =
-                new StandardizedResponse<>(
+        }  catch (MessagingException | IOException |
+                  MailAuthenticationException | UserAlreadyExistsException e) {
+            response = StandardizedResponse.failure(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    "We ran into an issue while sending a verification email, try again please",
+                    "Sign up failed. Please, try again later or contact our support team.",
                     e.getClass().getName(),
                     e.getMessage());
         }
-
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 
@@ -71,20 +66,17 @@ public class AuthController {
 
         try{
             JwtAuthenticationResponse authenticationResponse = authenticationService.signIn(request);
-            response =
-                new StandardizedResponse<>(
+            response = StandardizedResponse.success(
                     authenticationResponse,
                     HttpStatus.OK.value(),
                     "Sign in successful");
         } catch (BadCredentialsException | DisabledException e) {
-            response =
-                new StandardizedResponse<>(
+            response = StandardizedResponse.failure(
                     HttpStatus.UNAUTHORIZED.value(),
                     "Provided credentials are bad or user is disabled",
                     e.getClass().getName(),
                     e.getMessage());
         }
-
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 
@@ -94,16 +86,14 @@ public class AuthController {
         StandardizedResponse<JwtAuthenticationResponse> response;
         try{
             JwtAuthenticationResponse refreshResponse = refreshTokenService.refreshToken(request);
-            response =
-                new StandardizedResponse<>(
+            response = StandardizedResponse.success(
                     refreshResponse,
                     HttpStatus.OK.value(),
                     "Refreshing token successful");
         } catch (Exception e) {
-            response =
-                new StandardizedResponse<>(
+            response = StandardizedResponse.failure(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    "We ran into an issue while refreshing your token, try again please",
+                    "Refreshing token failed",
                     e.getClass().getName(),
                     e.getMessage());
         }
@@ -116,15 +106,13 @@ public class AuthController {
         StandardizedResponse<String> response;
         try {
             boolean isVerified = verificationTokenService.verify(email, code);
-
-
             if (isVerified) {
-                response = new StandardizedResponse<>(
+                response = StandardizedResponse.success(
                     "Your account is verified",
                     HttpStatus.OK.value(),
                     "Operation successful");
             } else {
-                response = new StandardizedResponse<>(
+                response = StandardizedResponse.failure(
                     HttpStatus.BAD_REQUEST.value(),
                     "Invalid verification code",
                     null,
@@ -132,15 +120,12 @@ public class AuthController {
             }
         }
         catch (TokenNotFoundException | UsernameNotFoundException e) {
-            response =
-                new StandardizedResponse<>(
+            response = StandardizedResponse.failure(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
                     "We ran into an issue while verifying your email, try again please",
                     e.getClass().getName(),
                     e.getMessage());
-
         }
-
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 
@@ -148,26 +133,20 @@ public class AuthController {
     @PostMapping("/reverify")
     public ResponseEntity<StandardizedResponse<String>> reverifyUser(@RequestParam("email") String email) {
         StandardizedResponse<String> response;
-
         try {
             authenticationService.sendVerificationEmail(email);
-            String reverifyResponse = "Another email has been sent to your email";
-            response = new StandardizedResponse<>(
-                reverifyResponse,
+            response = StandardizedResponse.success(
+                "Another email has been sent to your email",
                 HttpStatus.OK.value(),
                 "Operation successful");
-        } catch (MessagingException | IOException | UsernameNotFoundException |
-                 IncorrectResultSizeDataAccessException | UserIsAlreadyVerifiedException e) {
-            // IncorrectResultSizeDataAccessException is a wierd bug where each time it returns incremented
-            // amount of users even though there is only one user with that email in database
-            response =
-                new StandardizedResponse<>(
+        } catch (MessagingException | IOException | UsernameNotFoundException
+                 | MailAuthenticationException | UserIsAlreadyVerifiedException e) {
+            response = StandardizedResponse.failure(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
                     "We ran into an issue while sending another verification email, try again please",
                     e.getClass().getName(),
                     e.getMessage());
         }
-
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 }
