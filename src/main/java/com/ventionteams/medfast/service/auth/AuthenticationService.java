@@ -5,25 +5,19 @@ import com.ventionteams.medfast.dto.request.SignUpRequest;
 import com.ventionteams.medfast.dto.response.JwtAuthenticationResponse;
 import com.ventionteams.medfast.entity.RefreshToken;
 import com.ventionteams.medfast.entity.User;
-import com.ventionteams.medfast.exception.auth.UserAlreadyExistsException;
 import com.ventionteams.medfast.service.EmailService;
 import com.ventionteams.medfast.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.mail.MailAuthenticationException;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
 import java.io.IOException;
 import jakarta.mail.MessagingException;
 import com.ventionteams.medfast.exception.auth.UserIsAlreadyVerifiedException;
@@ -39,23 +33,14 @@ public class AuthenticationService {
     private final EmailService emailService;
     private final AuthenticationManager authenticationManager;
     private final VerificationTokenService verificationTokenService;
-    private final PlatformTransactionManager transactionManager;
 
 
+    @Transactional(rollbackFor={ MessagingException.class, IOException.class})
     public String signUp(SignUpRequest request) throws MessagingException, IOException {
         request.setPassword(passwordEncoder.encode(request.getPassword()));
-        TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
-        try {
-            User user = userService.create(request);
-            sendVerificationEmail(user);
-            transactionManager.commit(status);
-            return "Email verification link has been sent to your email";
-        }
-        catch (MessagingException | IOException |
-               MailAuthenticationException | UserAlreadyExistsException e) {
-            transactionManager.rollback(status);
-            throw e;
-        }
+        User user = userService.create(request);
+        sendVerificationEmail(user);
+        return "Email verification link has been sent to your email";
     }
 
     public void sendVerificationEmail(String encodedEmail) throws MessagingException, IOException {
