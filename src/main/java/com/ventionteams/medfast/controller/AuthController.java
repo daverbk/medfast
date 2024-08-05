@@ -4,6 +4,7 @@ import com.ventionteams.medfast.dto.request.RefreshTokenRequest;
 import com.ventionteams.medfast.dto.request.SignInRequest;
 import com.ventionteams.medfast.dto.request.SignUpRequest;
 import com.ventionteams.medfast.dto.response.JwtAuthenticationResponse;
+import com.ventionteams.medfast.dto.response.StandardizedResponse;
 import com.ventionteams.medfast.service.auth.AuthenticationService;
 import com.ventionteams.medfast.service.auth.RefreshTokenService;
 import com.ventionteams.medfast.service.auth.VerificationTokenService;
@@ -17,6 +18,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.mail.MailAuthenticationException;
+import com.ventionteams.medfast.exception.auth.UserAlreadyExistsException;
+import org.springframework.security.authentication.DisabledException;
+import com.ventionteams.medfast.exception.auth.TokenNotFoundException;
+import com.ventionteams.medfast.exception.auth.UserIsAlreadyVerifiedException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.io.IOException;
 
@@ -32,44 +41,114 @@ public class AuthController {
 
     @Operation(summary = "Sign up")
     @PostMapping("/signup")
-    public ResponseEntity<String> signUp(@RequestBody @Valid SignUpRequest request) {
+    public ResponseEntity<StandardizedResponse<String>> signUp(@RequestBody @Valid SignUpRequest request) {
+        StandardizedResponse<String> response;
+
         try {
-            return ResponseEntity.ok(authenticationService.signUp(request));
-        } catch (MessagingException | IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("We ran into an issue while sending a verification email, try again please");
+            String signupResponse = authenticationService.signUp(request);
+            response = StandardizedResponse.ok(
+                    signupResponse,
+                    HttpStatus.OK.value(),
+                    "Sign up successful");
+        }  catch (MessagingException | IOException |
+                  MailAuthenticationException | UserAlreadyExistsException e) {
+            response = StandardizedResponse.error(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "Sign up failed. Please, try again later or contact our support team.",
+                    e.getClass().getName(),
+                    e.getMessage());
         }
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 
     @Operation(summary = "Sign in")
     @PostMapping("/signin")
-    public ResponseEntity<JwtAuthenticationResponse> signIn(@RequestBody @Valid SignInRequest request) {
-        return ResponseEntity.ok(authenticationService.signIn(request));
+    public ResponseEntity<StandardizedResponse<JwtAuthenticationResponse>> signIn(@RequestBody @Valid SignInRequest request) {
+        StandardizedResponse<JwtAuthenticationResponse> response;
+
+        try{
+            JwtAuthenticationResponse authenticationResponse = authenticationService.signIn(request);
+            response = StandardizedResponse.ok(
+                    authenticationResponse,
+                    HttpStatus.OK.value(),
+                    "Sign in successful");
+        } catch (BadCredentialsException | DisabledException e) {
+            response = StandardizedResponse.error(
+                    HttpStatus.UNAUTHORIZED.value(),
+                    "Provided credentials are bad or user is disabled",
+                    e.getClass().getName(),
+                    e.getMessage());
+        }
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 
     @Operation(summary = "Refresh access token")
     @PostMapping("/refresh")
-    public ResponseEntity<JwtAuthenticationResponse> refreshToken(@RequestBody @Valid RefreshTokenRequest request) {
-        return ResponseEntity.ok(refreshTokenService.refreshToken(request));
+    public ResponseEntity<StandardizedResponse<JwtAuthenticationResponse>> refreshToken(@RequestBody @Valid RefreshTokenRequest request) {
+        StandardizedResponse<JwtAuthenticationResponse> response;
+        try{
+            JwtAuthenticationResponse refreshResponse = refreshTokenService.refreshToken(request);
+            response = StandardizedResponse.ok(
+                    refreshResponse,
+                    HttpStatus.OK.value(),
+                    "Refreshing token successful");
+        } catch (Exception e) {
+            response = StandardizedResponse.error(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "Refreshing token failed",
+                    e.getClass().getName(),
+                    e.getMessage());
+        }
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 
     @Operation(summary = "Verify email address")
     @PostMapping("/verify")
-    public ResponseEntity<String> verifyUser(@Email @RequestParam("email") String email, @RequestParam("code") String code) {
-        return verificationTokenService.verify(email, code)
-            ? ResponseEntity.ok("Your account is verified")
-            : ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid verification code");
+    public ResponseEntity<StandardizedResponse<String>> verifyUser(@Email @RequestParam("email") String email, @RequestParam("code") String code) {
+        StandardizedResponse<String> response;
+        try {
+            boolean isVerified = verificationTokenService.verify(email, code);
+            if (isVerified) {
+                response = StandardizedResponse.ok(
+                    "Your account is verified",
+                    HttpStatus.OK.value(),
+                    "Operation successful");
+            } else {
+                response = StandardizedResponse.error(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "Invalid verification code",
+                    null,
+                    null);
+            }
+        }
+        catch (TokenNotFoundException | UsernameNotFoundException e) {
+            response = StandardizedResponse.error(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "We ran into an issue while verifying your email, try again please",
+                    e.getClass().getName(),
+                    e.getMessage());
+        }
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 
     @Operation(summary = "Request another verification email")
     @PostMapping("/reverify")
-    public ResponseEntity<String> reverifyUser(@Email @RequestParam("email") String email) {
+    public ResponseEntity<StandardizedResponse<String>> reverifyUser(@Email @RequestParam("email") String email) {
+        StandardizedResponse<String> response;
         try {
             authenticationService.sendVerificationEmail(email);
-            return ResponseEntity.ok("Another email has been sent to your email");
-        } catch (MessagingException | IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("We ran into an issue while sending a verification email, try again please");
+            response = StandardizedResponse.ok(
+                "Another email has been sent to your email",
+                HttpStatus.OK.value(),
+                "Operation successful");
+        } catch (MessagingException | IOException | UsernameNotFoundException
+                 | MailAuthenticationException | UserIsAlreadyVerifiedException e) {
+            response = StandardizedResponse.error(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "We ran into an issue while sending another verification email, try again please",
+                    e.getClass().getName(),
+                    e.getMessage());
         }
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 }

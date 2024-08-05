@@ -6,18 +6,21 @@ import com.ventionteams.medfast.dto.request.SignUpRequest;
 import com.ventionteams.medfast.dto.response.JwtAuthenticationResponse;
 import com.ventionteams.medfast.entity.RefreshToken;
 import com.ventionteams.medfast.entity.User;
-import com.ventionteams.medfast.exception.auth.UserIsAlreadyVerifiedException;
 import com.ventionteams.medfast.service.EmailService;
 import com.ventionteams.medfast.service.UserService;
-import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.mail.MailAuthenticationException;
 import java.io.IOException;
+import jakarta.mail.MessagingException;
+import com.ventionteams.medfast.exception.auth.UserIsAlreadyVerifiedException;
+
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +34,8 @@ public class AuthenticationService {
     private final VerificationTokenService verificationTokenService;
     private final TokenConfig tokenConfig;
 
+
+    @Transactional(rollbackFor={ MessagingException.class, IOException.class})
     public String signUp(SignUpRequest request) throws MessagingException, IOException {
         request.setPassword(passwordEncoder.encode(request.getPassword()));
         User user = userService.create(request);
@@ -43,9 +48,22 @@ public class AuthenticationService {
         if (user.isEnabled()) {
             throw new UserIsAlreadyVerifiedException(email, "User is already verified");
         }
-
         verificationTokenService.addVerificationTokenForUser(user.getEmail());
-        emailService.sendVerificationEmail(user);
+
+        int maxRetries = 3;
+        int retries = 0;
+        boolean mailSuccessfullySent = false;
+        while (!mailSuccessfullySent && retries < maxRetries) {
+            try {
+                emailService.sendVerificationEmail(user);
+                mailSuccessfullySent = true;
+            } catch (MailAuthenticationException e) {
+                retries++;
+                if (retries == maxRetries) {
+                    throw e;
+                }
+            }
+        }
     }
 
     public JwtAuthenticationResponse signIn(SignInRequest request) {
