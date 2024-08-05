@@ -18,8 +18,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 
 @Service
 @RequiredArgsConstructor
@@ -36,20 +34,16 @@ public class AuthenticationService {
     public String signUp(SignUpRequest request) throws MessagingException, IOException {
         request.setPassword(passwordEncoder.encode(request.getPassword()));
         User user = userService.create(request);
-        sendVerificationEmail(user);
+        sendVerificationEmail(user.getEmail());
         return "Email verification link has been sent to your email";
     }
 
-    public void sendVerificationEmail(String encodedEmail) throws MessagingException, IOException {
-        String decodedEmail = URLDecoder.decode(encodedEmail, StandardCharsets.UTF_8);
-        User user = userService.getUserByEmail(decodedEmail);
-        sendVerificationEmail(user);
-    }
-
-    public void sendVerificationEmail(User user) throws MessagingException, IOException {
+    public void sendVerificationEmail(String email) throws MessagingException, IOException {
+        User user = userService.getUserByEmail(email);
         if (user.isEnabled()) {
-            throw new UserIsAlreadyVerifiedException(user.getEmail(), "User is already verified");
+            throw new UserIsAlreadyVerifiedException(email, "User is already verified");
         }
+
         verificationTokenService.addVerificationTokenForUser(user.getEmail());
         emailService.sendVerificationEmail(user);
     }

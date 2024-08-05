@@ -3,7 +3,7 @@ package com.ventionteams.medfast.service.auth;
 import com.ventionteams.medfast.config.properties.TokenConfig;
 import com.ventionteams.medfast.dto.request.RefreshTokenRequest;
 import com.ventionteams.medfast.dto.response.JwtAuthenticationResponse;
-import com.ventionteams.medfast.exception.auth.TokenRefreshException;
+import com.ventionteams.medfast.exception.auth.TokenExpiredException;
 import com.ventionteams.medfast.entity.RefreshToken;
 import com.ventionteams.medfast.repository.RefreshTokenRepository;
 import com.ventionteams.medfast.repository.UserRepository;
@@ -49,14 +49,16 @@ public class RefreshTokenService {
             jwtService.generateToken(refreshToken.getUser()),
             requestRefreshToken,
             tokenConfig.timeout().access(),
-            Duration.between(LocalDateTime.now(), refreshToken.getCreatedDate().plusSeconds(tokenConfig.timeout().refresh())).getSeconds()
+            Duration.between(LocalDateTime.now(),
+                refreshToken.getCreatedDate().plusSeconds(tokenConfig.timeout().refresh())).getSeconds()
         );
     }
 
     private void verifyExpiration(RefreshToken token) {
-        if (Duration.between(LocalDateTime.now(), token.getCreatedDate()).getSeconds() > tokenConfig.timeout().refresh()) {
+        long actualValidityPeriod = Duration.between(token.getCreatedDate(), LocalDateTime.now()).getSeconds();
+        if (actualValidityPeriod > tokenConfig.timeout().refresh()) {
             refreshTokenRepository.delete(token);
-            throw new TokenRefreshException(
+            throw new TokenExpiredException(
                 token.getToken(),
                 "Refresh token has expired. Please make a new sign in request"
             );

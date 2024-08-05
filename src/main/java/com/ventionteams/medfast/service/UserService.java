@@ -1,7 +1,7 @@
 package com.ventionteams.medfast.service;
 
 import com.ventionteams.medfast.dto.request.SignUpRequest;
-import com.ventionteams.medfast.entity.Role;
+import com.ventionteams.medfast.enums.Role;
 import com.ventionteams.medfast.exception.auth.UserAlreadyExistsException;
 import com.ventionteams.medfast.entity.User;
 import com.ventionteams.medfast.repository.UserRepository;
@@ -51,6 +51,12 @@ public class UserService {
             .build();
 
         return save(user);
+    }
+
+    @Transactional
+    public void resetPassword(User user, String encodedPassword) {
+        user.setPassword(encodedPassword);
+        save(user);
     }
 
     public User save(User user) {

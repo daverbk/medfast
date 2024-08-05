@@ -11,17 +11,20 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
 @RestController
-@RequestMapping("/auth")
+@Validated
 @RequiredArgsConstructor
 @Tag(name = "Sign in")
+@RequestMapping("/auth")
 public class AuthController {
     private final AuthenticationService authenticationService;
     private final RefreshTokenService refreshTokenService;
@@ -30,16 +33,12 @@ public class AuthController {
     @Operation(summary = "Sign up")
     @PostMapping("/signup")
     public ResponseEntity<String> signUp(@RequestBody @Valid SignUpRequest request) {
-        ResponseEntity<String> response;
-
         try {
-            response = ResponseEntity.ok(authenticationService.signUp(request));
+            return ResponseEntity.ok(authenticationService.signUp(request));
         } catch (MessagingException | IOException e) {
-            response = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("We ran into an issue while sending a verification email, try again please");
         }
-
-        return response;
     }
 
     @Operation(summary = "Sign in")
@@ -56,7 +55,7 @@ public class AuthController {
 
     @Operation(summary = "Verify email address")
     @PostMapping("/verify")
-    public ResponseEntity<String> verifyUser(@RequestParam("email") String email, @RequestParam("code") String code) {
+    public ResponseEntity<String> verifyUser(@Email @RequestParam("email") String email, @RequestParam("code") String code) {
         return verificationTokenService.verify(email, code)
             ? ResponseEntity.ok("Your account is verified")
             : ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid verification code");
@@ -64,17 +63,13 @@ public class AuthController {
 
     @Operation(summary = "Request another verification email")
     @PostMapping("/reverify")
-    public ResponseEntity<String> reverifyUser(@RequestParam("email") String email) {
-        ResponseEntity<String> response;
-
+    public ResponseEntity<String> reverifyUser(@Email @RequestParam("email") String email) {
         try {
             authenticationService.sendVerificationEmail(email);
-            response = ResponseEntity.ok("Another email has been sent to your email");
+            return ResponseEntity.ok("Another email has been sent to your email");
         } catch (MessagingException | IOException e) {
-            response = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("We ran into an issue while sending a verification email, try again please");
         }
-
-        return response;
     }
 }

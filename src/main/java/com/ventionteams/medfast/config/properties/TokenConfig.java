@@ -21,7 +21,10 @@ public record TokenConfig(
         long access,
         @NotNull(message = "token.timeout.refresh must not be null")
         @PositiveOrZero(message = "token.timeout.refresh must be greater or equal to 0")
-        long refresh
+        long refresh,
+        @NotNull(message = "token.timeout.password-reset must not be null")
+        @PositiveOrZero(message = "token.timeout.refresh must be greater or equal to 0")
+        long resetPassword
     ) {}
     public record Signing(
         @NotBlank(message = "token.signing.key must not be blank")

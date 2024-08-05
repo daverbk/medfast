@@ -21,6 +21,10 @@ public class SignUpRequest {
     @Schema(description = "Password", example = "12312312")
     @Size(min = 10, max = 50, message = "Password's length must not be less than 10 or greater than 50 characters")
     @NotBlank(message = "Password must not be blank")
+    @Pattern(
+        regexp = "^(?=.*[0-9])(?=.*[!\"#$%&'()*+,\\-./:;<=>?@\\[\\]^_`{|}~])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{10,50}$",
+        message = "Password must contain at least one digit, one special character, one lowercase, and one uppercase letter, and no whitespace"
+    )
     private String password;
 
     @Schema(description = "Name", example = "Alex")

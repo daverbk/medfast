@@ -32,6 +32,7 @@ token:
   timeout:
     access: 3600
     refresh: 7200
+    reset-password: 60
   signing:
     key: 0e3d01d7c4f45a1e8df9c5d0937a0e295dfd42d15268b8ac7bf1ff66513c3ea6
 

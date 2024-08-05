@@ -6,39 +6,59 @@ import com.ventionteams.medfast.service.auth.VerificationUrlService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class EmailService {
+    private final String LOGO_PATH = "templates/logos/logo.png";
+    private final String WATERMARK_PATH = "templates/logos/watermark.png";
+
+    private final String VERIFICATION_EMAIL_SUBJECT = "Medfast: Complete Your Registration";
+    private final String RESET_PASSWORD_EMAIL_SUBJECT = "Medfast: Reset Your Password";
+
+    private final String VERIFICATION_EMAIL_TEMPLATE = "verification";
+    private final String RESET_PASSWORD_EMAIL_TEMPLATE = "password_reset";
+
     private final JavaMailSender emailSender;
     private final TemplateEngine templateEngine;
     private final VerificationUrlService verificationUrlService;
     private final SpringConfig springConfig;
 
-    public void sendVerificationEmail(User user) throws MessagingException, IOException {
+    public void sendVerificationEmail(User user) throws MessagingException {
         Context context = new Context();
         context.setVariable("userName", user.getName());
         context.setVariable("verificationLink", verificationUrlService.generateVerificationUrl(user.getEmail()));
-        context.setVariable("medfastMailbox", springConfig.mail().username());
+        context.setVariable("supportMailbox", springConfig.mail().username());
+        String content = templateEngine.process(VERIFICATION_EMAIL_TEMPLATE, context);
+        sendMimeMessage(VERIFICATION_EMAIL_SUBJECT, user.getEmail(), content);
+    }
 
-        String content = templateEngine.process("verification_email", context);
+    public void sendResetPasswordEmail(User user, String token) throws MessagingException {
+        Context context = new Context();
+        context.setVariable("token", token);
+        context.setVariable("supportMailbox", springConfig.mail().username());
+        String content = templateEngine.process(RESET_PASSWORD_EMAIL_TEMPLATE, context);
+        sendMimeMessage(RESET_PASSWORD_EMAIL_SUBJECT, user.getEmail(), content);
+    }
 
+    private void sendMimeMessage(String subject, String recipient, String content) throws MessagingException {
         MimeMessage message = emailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message);
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
 
+        helper.setSubject(subject);
         helper.setFrom(springConfig.mail().username());
-        helper.setTo(user.getEmail());
-        helper.setSubject("Complete Your Registration on Medfast");
+        helper.setTo(recipient);
         helper.setText(content, true);
+        helper.addInline("logo", new ClassPathResource(LOGO_PATH));
+        helper.addInline("watermark", new ClassPathResource(WATERMARK_PATH));
 
         emailSender.send(message);
     }

@@ -1,6 +1,7 @@
 package com.ventionteams.medfast.entity;
 
 import com.ventionteams.medfast.entity.base.BaseEntity;
+import com.ventionteams.medfast.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;

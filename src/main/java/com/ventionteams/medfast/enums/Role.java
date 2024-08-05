@@ -1,4 +1,4 @@
-package com.ventionteams.medfast.entity;
+package com.ventionteams.medfast.enums;
 
 public enum Role {
     PATIENT,

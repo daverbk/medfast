@@ -7,24 +7,28 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
-@Schema(description = "Sign in request")
-public class SignInRequest {
+@NoArgsConstructor
+@Schema(description = "Reset password request")
+public class ResetPasswordRequest {
 
-    @Schema(description = "Email", example = "johndoe@gmail.com")
-    @Size(min = 10, max = 50, message = "Email must contain from 10 to 50 characters")
-    @NotBlank(message = "Email must not be blank")
-    @Email(message = "Email must follow the format user@example.com")
-    private String email;
+    @Schema(description = "One time password", example = "4325")
+    @Size(min = 4, max = 4, message = "One time password must contain 4 characters")
+    private String otp;
 
-    @Schema(description = "Password", example = "12312312")
+    @Schema(description = "New password", example = "password")
     @Size(min = 10, max = 50, message = "Password's length must not be less than 10 or greater than 50 characters")
     @NotBlank(message = "Password must not be blank")
     @Pattern(
         regexp = "^(?=.*[0-9])(?=.*[!\"#$%&'()*+,\\-./:;<=>?@\\[\\]^_`{|}~])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{10,50}$",
         message = "Password must contain at least one digit, one special character, one lowercase, and one uppercase letter, and no whitespace"
     )
-    private String password;
+    private String newPassword;
+
+    @Schema(description = "Email", example = "user@example.com")
+    @Email(message = "Email must follow the format user@example.com")
+    private String email;
 }

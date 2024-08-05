@@ -6,9 +6,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-
 @Service
 @RequiredArgsConstructor
 public class VerificationUrlService {
@@ -16,11 +13,10 @@ public class VerificationUrlService {
     private final AppConfig appConfig;
 
     public String generateVerificationUrl(String email) {
-        String encodedEmail = URLEncoder.encode(email, StandardCharsets.UTF_8);
         VerificationToken verificationToken = verificationTokenService.getVerificationTokenByUserEmail(email);
         return UriComponentsBuilder.fromHttpUrl(appConfig.baseUrl())
             .path("/verify")
-            .queryParam("email", encodedEmail)
+            .queryParam("email", email)
             .queryParam("code", verificationToken.getToken())
             .toUriString();
     }
