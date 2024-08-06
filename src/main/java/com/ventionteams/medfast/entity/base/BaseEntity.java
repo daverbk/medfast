@@ -3,6 +3,8 @@ package com.ventionteams.medfast.entity.base;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -11,6 +13,8 @@ import java.time.LocalDateTime;
 @MappedSuperclass
 @Getter
 @Setter
+@SuperBuilder
+@NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity {
     @CreatedBy

@@ -47,16 +47,17 @@ public class AuthController {
         try {
             String signupResponse = authenticationService.signUp(request);
             response = StandardizedResponse.ok(
-                    signupResponse,
-                    HttpStatus.OK.value(),
-                    "Sign up successful");
-        }  catch (MessagingException | IOException |
-                  MailAuthenticationException | UserAlreadyExistsException e) {
+                signupResponse,
+                HttpStatus.OK.value(),
+                "Sign up successful");
+        } catch (MessagingException | IOException |
+                 MailAuthenticationException | UserAlreadyExistsException e) {
             response = StandardizedResponse.error(
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    "Sign up failed. Please, try again later or contact our support team.",
-                    e.getClass().getName(),
-                    e.getMessage());
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "Sign up failed. Please, try again later or contact our support team.",
+                e.getClass().getName(),
+                e.getMessage());
+            e.printStackTrace();
         }
         return ResponseEntity.status(response.getStatus()).body(response);
     }
@@ -66,18 +67,18 @@ public class AuthController {
     public ResponseEntity<StandardizedResponse<JwtAuthenticationResponse>> signIn(@RequestBody @Valid SignInRequest request) {
         StandardizedResponse<JwtAuthenticationResponse> response;
 
-        try{
+        try {
             JwtAuthenticationResponse authenticationResponse = authenticationService.signIn(request);
             response = StandardizedResponse.ok(
-                    authenticationResponse,
-                    HttpStatus.OK.value(),
-                    "Sign in successful");
+                authenticationResponse,
+                HttpStatus.OK.value(),
+                "Sign in successful");
         } catch (BadCredentialsException | DisabledException e) {
             response = StandardizedResponse.error(
-                    HttpStatus.UNAUTHORIZED.value(),
-                    "Provided credentials are bad or user is disabled",
-                    e.getClass().getName(),
-                    e.getMessage());
+                HttpStatus.UNAUTHORIZED.value(),
+                "Provided credentials are bad or user is disabled",
+                e.getClass().getName(),
+                e.getMessage());
         }
         return ResponseEntity.status(response.getStatus()).body(response);
     }
@@ -86,18 +87,18 @@ public class AuthController {
     @PostMapping("/refresh")
     public ResponseEntity<StandardizedResponse<JwtAuthenticationResponse>> refreshToken(@RequestBody @Valid RefreshTokenRequest request) {
         StandardizedResponse<JwtAuthenticationResponse> response;
-        try{
+        try {
             JwtAuthenticationResponse refreshResponse = refreshTokenService.refreshToken(request);
             response = StandardizedResponse.ok(
-                    refreshResponse,
-                    HttpStatus.OK.value(),
-                    "Refreshing token successful");
+                refreshResponse,
+                HttpStatus.OK.value(),
+                "Refreshing token successful");
         } catch (Exception e) {
             response = StandardizedResponse.error(
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    "Refreshing token failed",
-                    e.getClass().getName(),
-                    e.getMessage());
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "Refreshing token failed",
+                e.getClass().getName(),
+                e.getMessage());
         }
         return ResponseEntity.status(response.getStatus()).body(response);
     }
@@ -120,13 +121,12 @@ public class AuthController {
                     null,
                     null);
             }
-        }
-        catch (TokenNotFoundException | UsernameNotFoundException e) {
+        } catch (TokenNotFoundException | UsernameNotFoundException e) {
             response = StandardizedResponse.error(
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    "We ran into an issue while verifying your email, try again please",
-                    e.getClass().getName(),
-                    e.getMessage());
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "We ran into an issue while verifying your email, try again please",
+                e.getClass().getName(),
+                e.getMessage());
         }
         return ResponseEntity.status(response.getStatus()).body(response);
     }
@@ -144,10 +144,10 @@ public class AuthController {
         } catch (MessagingException | IOException | UsernameNotFoundException
                  | MailAuthenticationException | UserIsAlreadyVerifiedException e) {
             response = StandardizedResponse.error(
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    "We ran into an issue while sending another verification email, try again please",
-                    e.getClass().getName(),
-                    e.getMessage());
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "We ran into an issue while sending another verification email, try again please",
+                e.getClass().getName(),
+                e.getMessage());
         }
         return ResponseEntity.status(response.getStatus()).body(response);
     }

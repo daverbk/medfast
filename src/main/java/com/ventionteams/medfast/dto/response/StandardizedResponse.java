@@ -45,12 +45,25 @@ public class StandardizedResponse<T> {
         this.message = message;
         this.timestamp = LocalDateTime.now();
     }
+
+    public StandardizedResponse(T data, int status, String message, String errorClass, String errorMessage) {
+        this.errorClass = errorClass;
+        this.errorMessage = errorMessage;
+        this.status = status;
+        this.message = message;
+        this.timestamp = LocalDateTime.now();
+    }
+
     public static <T> StandardizedResponse<T> ok(T data, int status, String message) {
         return new StandardizedResponse<>(data, status, message);
     }
 
     public static <T> StandardizedResponse<T> error(int status, String message, String errorClass, String errorMessage) {
         return new StandardizedResponse<>(status, message, errorClass, errorMessage);
+    }
+
+    public static <T> StandardizedResponse<T> errorWithData(T data, int status, String message, String errorClass, String errorMessage) {
+        return new StandardizedResponse<>(data, status, message, errorClass, errorMessage);
     }
 
 }

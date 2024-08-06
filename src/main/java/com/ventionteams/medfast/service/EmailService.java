@@ -34,7 +34,7 @@ public class EmailService {
 
     public void sendVerificationEmail(User user) throws MessagingException {
         Context context = new Context();
-        context.setVariable("userName", user.getName());
+        context.setVariable("userName", user.getPerson().getName());
         context.setVariable("verificationLink", verificationUrlService.generateVerificationUrl(user.getEmail()));
         context.setVariable("supportMailbox", springConfig.mail().username());
         String content = templateEngine.process(VERIFICATION_EMAIL_TEMPLATE, context);

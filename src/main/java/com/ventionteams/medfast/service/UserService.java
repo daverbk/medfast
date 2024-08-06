@@ -1,9 +1,11 @@
 package com.ventionteams.medfast.service;
 
 import com.ventionteams.medfast.dto.request.SignUpRequest;
+import com.ventionteams.medfast.entity.Patient;
 import com.ventionteams.medfast.enums.Role;
 import com.ventionteams.medfast.exception.auth.UserAlreadyExistsException;
 import com.ventionteams.medfast.entity.User;
+import com.ventionteams.medfast.repository.PatientRepository;
 import com.ventionteams.medfast.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -15,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository repository;
+    private final PatientRepository patientRepository;
 
     public UserDetailsService getUserDetailsService() {
         return this::getUserByEmail;
@@ -36,6 +39,10 @@ public class UserService {
             .password(request.getPassword())
             .role(Role.PATIENT)
             .enabled(false)
+            .build();
+
+        Patient patient = save(Patient.builder()
+            .checkboxTermsAndConditions(false)
             .birthDate(request.getBirthDate())
             .name(request.getName())
             .surname(request.getSurname())
@@ -48,7 +55,10 @@ public class UserService {
             .phone(request.getPhone())
             .sex(request.getSex())
             .citizenship(request.getCitizenship())
-            .build();
+            .user(user)
+            .build());
+
+        user.setPerson(patient);
 
         return save(user);
     }
@@ -61,5 +71,9 @@ public class UserService {
 
     public User save(User user) {
         return repository.save(user);
+    }
+
+    public Patient save(Patient patient) {
+        return patientRepository.save(patient);
     }
 }
