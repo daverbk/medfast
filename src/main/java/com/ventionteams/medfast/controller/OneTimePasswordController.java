@@ -1,5 +1,6 @@
 package com.ventionteams.medfast.controller;
 
+import com.ventionteams.medfast.dto.response.StandardizedResponse;
 import com.ventionteams.medfast.service.password.OneTimePasswordService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -15,32 +16,56 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * One time password controller responsible for provisioning and verifying one time passwords.
+ */
 @RestController
 @Validated
 @RequiredArgsConstructor
 @Tag(name = "One-time Password")
 @RequestMapping("/auth/otp")
 public class OneTimePasswordController {
-    private final OneTimePasswordService oneTimePasswordService;
 
-    @Operation(summary = "Request one time password")
-    @PostMapping
-    public ResponseEntity<String> sendOtp(@Email @RequestParam("email") String email) {
-        try {
-            oneTimePasswordService.sendResetPasswordEmail(email);
-            return ResponseEntity.ok("Reset password email has been sent");
-        } catch (MessagingException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("We ran into an issue while sending a verification email, try again please");
-        }
+  private final OneTimePasswordService oneTimePasswordService;
+
+  /**
+   * Send a one time password to the user's email.
+   */
+  @Operation(summary = "Request one time password")
+  @PostMapping
+  public ResponseEntity<StandardizedResponse<String>> sendOtp(
+      @Email @RequestParam("email") String email) {
+
+    StandardizedResponse<String> response;
+    try {
+      oneTimePasswordService.sendResetPasswordEmail(email);
+      response = StandardizedResponse.ok(
+          "Reset password email has been sent",
+          HttpStatus.OK.value(),
+          "Email sent successfully");
+    } catch (MessagingException e) {
+      response = StandardizedResponse.error(
+          HttpStatus.INTERNAL_SERVER_ERROR.value(),
+          "We ran into an issue while sending a verification email, try again please",
+          e.getClass().getName(),
+          e.getMessage());
     }
+    return ResponseEntity.status(response.getStatus()).body(response);
+  }
 
-    @Operation(summary = "Verify one time password")
-    @PostMapping("/verify")
-    public ResponseEntity<String> verifyOtp(@Email @RequestParam("email") String email,
-                                            @Size(min = 4, max = 4) @RequestParam("token") String token) {
+  /**
+   * Verify the one time password sent from user.
+   */
+  @Operation(summary = "Verify one time password")
+  @PostMapping("/verify")
+  public ResponseEntity<StandardizedResponse<String>> verifyOtp(
+      @Email @RequestParam("email") String email,
+      @Size(min = 4, max = 4) @RequestParam("token") String token) {
 
-        oneTimePasswordService.verify(email, token);
-        return ResponseEntity.ok("Token is verified");
-    }
+    oneTimePasswordService.verify(email, token);
+    return ResponseEntity.status(HttpStatus.OK).body(StandardizedResponse.ok(
+        "Token is valid",
+        HttpStatus.OK.value(),
+        "Token has been verified"));
+  }
 }

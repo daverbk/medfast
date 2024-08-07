@@ -14,6 +14,7 @@ Backend repository for MedFast project
       * [Without Docker](#without-docker)
         * [Prerequisites](#prerequisites-1)
         * [Steps](#steps-1)
+    * [Coding Style](#coding-style)
 <!-- TOC -->
 
 ## Technological Stack
@@ -86,8 +87,8 @@ docker compose up --build
 - Java 17
 - Make sure you have PostgreSQL installed and running on your machine on port `5432` with the
   following credentials:
-  - username: `user`
-  - password: `secret`
+    - username: `user`
+    - password: `secret`
 - Environment variable:
     - `MAIL_PASSWORD=medfast_email_password`
 
@@ -107,3 +108,19 @@ Run the following command in the root directory of the project
 ```bash
 ./gradlew bootRun
 ```
+
+### Coding Style
+
+We are following the [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html) for
+this project. Please make sure to follow the guidelines. They are enforced by the `checkstyle`
+plugin.
+
+It's recommended to install
+the [CheckStyle-IDEA](https://plugins.jetbrains.com/plugin/1065-checkstyle-idea) plugin for IntelliJ
+IDEA to see the style violations in real-time. To run the checkstyle task, open the CheckStyle tab
+and run the `Check Project` task.
+
+Another checkstyle-related recommendation would be to turn on real-time checking and set the
+inspection severity to `Error` in
+the `Preferences` -> `Editor` -> `Inspections` -> `Checkstyle` -> `Checkstyle real-time scan` ->
+`Severity` -> `Error`.

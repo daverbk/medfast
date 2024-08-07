@@ -6,15 +6,24 @@ import jakarta.validation.constraints.NotNull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
+/**
+ * Application configuration properties from the spring descendants of application.yml.
+ */
 @Validated
 @ConfigurationProperties(prefix = "spring")
 public record SpringConfig(
     @NotNull(message = "spring.mail must not be null")
     Mail mail
 ) {
-    public record Mail(
-        @NotBlank(message = "spring.mail.username must not be blank")
-        @Email(message = "spring.mail.username must follow the format user@example.com")
-        String username
-    ) {}
+
+  /**
+   * Configuration properties for the mail descendants.
+   */
+  public record Mail(
+      @NotBlank(message = "spring.mail.username must not be blank")
+      @Email(message = "spring.mail.username must follow the format user@example.com")
+      String username
+  ) {
+
+  }
 }

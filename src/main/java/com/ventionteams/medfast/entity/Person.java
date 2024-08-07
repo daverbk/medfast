@@ -1,12 +1,24 @@
 package com.ventionteams.medfast.entity;
 
 import com.ventionteams.medfast.entity.base.BaseEntity;
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import java.time.LocalDate;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-import java.time.LocalDate;
-
+/**
+ * Person entity class.
+ */
 @Entity
 @Data
 @SuperBuilder
@@ -15,46 +27,47 @@ import java.time.LocalDate;
 @Table(name = "persons", schema = "public")
 @Inheritance(strategy = InheritanceType.JOINED)
 public class Person extends BaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
-    @Column(name = "name", nullable = false)
-    private String name;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(name = "surname", nullable = false)
-    private String surname;
+  @Column(name = "name", nullable = false)
+  private String name;
 
-    @Column(name = "birth_date", nullable = false)
-    private LocalDate birthDate;
+  @Column(name = "surname", nullable = false)
+  private String surname;
 
-    @Column(name = "sex")
-    private String sex;
+  @Column(name = "birth_date", nullable = false)
+  private LocalDate birthDate;
 
-    @Column(name = "citizenship")
-    private String citizenship;
+  @Column(name = "sex")
+  private String sex;
 
-    @Column(name = "street_address")
-    private String streetAddress;
+  @Column(name = "citizenship")
+  private String citizenship;
 
-    @Column(name = "house")
-    private String house;
+  @Column(name = "street_address")
+  private String streetAddress;
 
-    @Column(name = "apartment")
-    private String apartment;
+  @Column(name = "house")
+  private String house;
 
-    @Column(name = "city")
-    private String city;
+  @Column(name = "apartment")
+  private String apartment;
 
-    @Column(name = "state")
-    private String state;
+  @Column(name = "city")
+  private String city;
 
-    @Column(name = "zip")
-    private String zip;
+  @Column(name = "state")
+  private String state;
 
-    @Column(name = "phone")
-    private String phone;
+  @Column(name = "zip")
+  private String zip;
 
-    @OneToOne(mappedBy = "person")
-    private User user;
+  @Column(name = "phone")
+  private String phone;
+
+  @OneToOne(mappedBy = "person")
+  private User user;
 }

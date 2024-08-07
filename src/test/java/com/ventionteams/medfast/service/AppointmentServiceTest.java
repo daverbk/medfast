@@ -1,6 +1,8 @@
 package com.ventionteams.medfast.service;
 
-import com.ventionteams.medfast.dto.response.ConsultationAppointmentResponse;
+import static org.mockito.Mockito.when;
+
+import com.ventionteams.medfast.dto.response.AppointmentResponse;
 import com.ventionteams.medfast.entity.ConsultationAppointment;
 import com.ventionteams.medfast.entity.Patient;
 import com.ventionteams.medfast.entity.Person;
@@ -8,6 +10,9 @@ import com.ventionteams.medfast.enums.AppointmentRequestType;
 import com.ventionteams.medfast.exception.appointment.NegativeAppointmentsAmountException;
 import com.ventionteams.medfast.mapper.AppointmentsToResponse;
 import com.ventionteams.medfast.repository.AppointmentRepository;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,91 +20,90 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-
-import static org.mockito.Mockito.when;
-
+/**
+ * Checks appointments service functionality with unit tests.
+ */
 @ExtendWith(MockitoExtension.class)
 public class AppointmentServiceTest {
-    @Mock
-    private AppointmentRepository appointmentRepository;
-    @Mock
-    private AppointmentsToResponse appointmentsToResponse;
-    @InjectMocks
-    private AppointmentService appointmentService;
 
-    @Test
-    void getAppointments_EmptyPerson_ReturnsEmptyArrayList() {
-        Optional<Person> person = Optional.empty();
-        Optional<Integer> amount = Optional.empty();
-        AppointmentRequestType type = AppointmentRequestType.UPCOMING;
+  @Mock
+  private AppointmentRepository appointmentRepository;
 
-        List<ConsultationAppointmentResponse> appointments = appointmentService
-            .getAppointments(person, amount, type);
+  @Mock
+  private AppointmentsToResponse appointmentsToResponse;
 
-        Assertions.assertThat(appointments).isEmpty();
-    }
+  @InjectMocks
+  private AppointmentService appointmentService;
 
-    @Test
-    void getAppointments_NegativeAmount_ExceptionThrown() {
-        Optional<Person> person = Optional.empty();
-        Optional<Integer> amount = Optional.of(-5);
-        AppointmentRequestType type = AppointmentRequestType.UPCOMING;
+  @Test
+  void getAppointments_EmptyPerson_ReturnsEmptyArrayList() {
+    Optional<Person> person = Optional.empty();
+    Optional<Integer> amount = Optional.empty();
+    AppointmentRequestType type = AppointmentRequestType.UPCOMING;
 
-        Assertions.assertThatThrownBy(() -> appointmentService.getAppointments(person, amount, type))
-            .isInstanceOf(NegativeAppointmentsAmountException.class);
-    }
+    List<AppointmentResponse> appointments = appointmentService
+        .getAppointments(person, amount, type);
 
-    @Test
-    void getAppointments_UpcomingType_ReturnsArrayList() {
-        Optional<Person> person = Optional.ofNullable(Patient.builder()
-            .id(1L)
-            .checkboxTermsAndConditions(false)
-            .build());
-        Optional<Integer> amount = Optional.of(5);
-        AppointmentRequestType type = AppointmentRequestType.UPCOMING;
-        List<ConsultationAppointment> consultationAppointments = List.of(
-            ConsultationAppointment.builder()
-                .dateFrom(LocalDateTime.now().plusDays(1))
-                .build()
-        );
+    Assertions.assertThat(appointments).isEmpty();
+  }
 
-        when(appointmentRepository.findAllByPatientOrDoctorOrderByDateFromAsc(person.get()))
-            .thenReturn(consultationAppointments);
+  @Test
+  void getAppointments_NegativeAmount_ExceptionThrown() {
+    Optional<Person> person = Optional.empty();
+    Optional<Integer> amount = Optional.of(-5);
+    AppointmentRequestType type = AppointmentRequestType.UPCOMING;
 
-        List<ConsultationAppointmentResponse> consultationAppointmentResponses = appointmentService
-            .getAppointments(person, amount, type);
+    Assertions.assertThatThrownBy(() -> appointmentService.getAppointments(person, amount, type))
+        .isInstanceOf(NegativeAppointmentsAmountException.class);
+  }
 
-        Assertions.assertThat(consultationAppointmentResponses).isEqualTo(
-            appointmentsToResponse.apply(consultationAppointments)
-        );
-    }
+  @Test
+  void getAppointments_UpcomingType_ReturnsArrayList() {
+    Optional<Person> person = Optional.ofNullable(Patient.builder()
+        .id(1L)
+        .checkboxTermsAndConditions(false)
+        .build());
+    Optional<Integer> amount = Optional.of(5);
+    AppointmentRequestType type = AppointmentRequestType.UPCOMING;
+    List<ConsultationAppointment> consultationAppointments = List.of(
+        ConsultationAppointment.builder()
+            .dateFrom(LocalDateTime.now().plusDays(1))
+            .build()
+    );
 
-    @Test
-    void getAppointments_PastType_ReturnsArrayList() {
-        Optional<Person> person = Optional.ofNullable(Patient.builder()
-            .id(1L)
-            .checkboxTermsAndConditions(false)
-            .build());
-        Optional<Integer> amount = Optional.of(5);
-        AppointmentRequestType type = AppointmentRequestType.PAST;
-        List<ConsultationAppointment> consultationAppointments = List.of(
-            ConsultationAppointment.builder()
-                .dateFrom(LocalDateTime.now().minusDays(1))
-                .build()
-        );
+    when(appointmentRepository.findAllByPatientOrDoctorOrderByDateFromAsc(person.get()))
+        .thenReturn(consultationAppointments);
 
-        when(appointmentRepository.findAllByPatientOrDoctorOrderByDateFromAsc(person.get()))
-            .thenReturn(consultationAppointments);
+    List<AppointmentResponse> appointmentRespons = appointmentService
+        .getAppointments(person, amount, type);
 
-        List<ConsultationAppointmentResponse> consultationAppointmentResponses = appointmentService
-            .getAppointments(person, amount, type);
+    Assertions.assertThat(appointmentRespons).isEqualTo(
+        appointmentsToResponse.apply(consultationAppointments)
+    );
+  }
 
-        Assertions.assertThat(consultationAppointmentResponses).isEqualTo(
-            appointmentsToResponse.apply(consultationAppointments)
-        );
-    }
+  @Test
+  void getAppointments_PastType_ReturnsArrayList() {
+    Optional<Person> person = Optional.ofNullable(Patient.builder()
+        .id(1L)
+        .checkboxTermsAndConditions(false)
+        .build());
+    Optional<Integer> amount = Optional.of(5);
+    AppointmentRequestType type = AppointmentRequestType.PAST;
+    List<ConsultationAppointment> consultationAppointments = List.of(
+        ConsultationAppointment.builder()
+            .dateFrom(LocalDateTime.now().minusDays(1))
+            .build()
+    );
 
+    when(appointmentRepository.findAllByPatientOrDoctorOrderByDateFromAsc(person.get()))
+        .thenReturn(consultationAppointments);
+
+    List<AppointmentResponse> appointmentRespons = appointmentService
+        .getAppointments(person, amount, type);
+
+    Assertions.assertThat(appointmentRespons).isEqualTo(
+        appointmentsToResponse.apply(consultationAppointments)
+    );
+  }
 }

@@ -1,14 +1,17 @@
 package com.ventionteams.medfast.config;
 
+import java.util.Random;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.Random;
-
+/**
+ * Application configuration class. Provides general utility beans.
+ */
 @Configuration
 public class AppConfig {
-    @Bean
-    public Random random() {
-        return new Random();
-    }
+
+  @Bean
+  public Random random() {
+    return new Random();
+  }
 }

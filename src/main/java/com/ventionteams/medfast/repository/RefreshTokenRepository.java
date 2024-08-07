@@ -1,11 +1,13 @@
 package com.ventionteams.medfast.repository;
 
-
 import com.ventionteams.medfast.entity.RefreshToken;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Optional;
-
+/**
+ * Repository for the refresh token entity.
+ */
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Integer> {
-    Optional<RefreshToken> findByToken(String token);
+
+  Optional<RefreshToken> findByToken(String token);
 }

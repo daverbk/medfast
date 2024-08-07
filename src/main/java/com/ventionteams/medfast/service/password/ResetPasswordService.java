@@ -10,23 +10,32 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+/**
+ * Service responsible for handling reset password operations.
+ */
 @Service
 @RequiredArgsConstructor
 public class ResetPasswordService {
-    private final UserService userService;
-    private final PasswordEncoder passwordEncoder;
-    private final OneTimePasswordRepository oneTimePasswordRepository;
 
-    public void resetPassword(ResetPasswordRequest resetPasswordRequest) {
-        OneTimePassword token = oneTimePasswordRepository
-            .findByUserEmailAndToken(resetPasswordRequest.getEmail(), resetPasswordRequest.getOtp())
-            .orElseThrow(() -> new TokenNotFoundException(resetPasswordRequest.getEmail(),
-                "One time password token is not found for user"));
+  private final UserService userService;
+  private final PasswordEncoder passwordEncoder;
+  private final OneTimePasswordRepository oneTimePasswordRepository;
 
-        if (passwordEncoder.matches(resetPasswordRequest.getNewPassword(), token.getUser().getPassword())) {
-            throw new PasswordDoesNotMeetHistoryConstraint("The password has already been used before");
-        }
+  /**
+   * Reset the password for the user.
+   */
+  public void resetPassword(ResetPasswordRequest resetPasswordRequest) {
+    OneTimePassword token = oneTimePasswordRepository
+        .findByUserEmailAndToken(resetPasswordRequest.getEmail(), resetPasswordRequest.getOtp())
+        .orElseThrow(() -> new TokenNotFoundException(resetPasswordRequest.getEmail(),
+            "One time password token is not found for user"));
 
-        userService.resetPassword(token.getUser(), passwordEncoder.encode(resetPasswordRequest.getNewPassword()));
+    if (passwordEncoder.matches(resetPasswordRequest.getNewPassword(),
+        token.getUser().getPassword())) {
+      throw new PasswordDoesNotMeetHistoryConstraint("The password has already been used before");
     }
+
+    userService.resetPassword(token.getUser(),
+        passwordEncoder.encode(resetPasswordRequest.getNewPassword()));
+  }
 }

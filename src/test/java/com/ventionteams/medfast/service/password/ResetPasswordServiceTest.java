@@ -1,5 +1,10 @@
 package com.ventionteams.medfast.service.password;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.ventionteams.medfast.dto.request.ResetPasswordRequest;
 import com.ventionteams.medfast.entity.OneTimePassword;
 import com.ventionteams.medfast.entity.User;
@@ -7,6 +12,7 @@ import com.ventionteams.medfast.exception.auth.TokenNotFoundException;
 import com.ventionteams.medfast.exception.password.PasswordDoesNotMeetHistoryConstraint;
 import com.ventionteams.medfast.repository.OneTimePasswordRepository;
 import com.ventionteams.medfast.service.UserService;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,74 +20,78 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
-
+/**
+ * Checks the reset password service functionality with unit tests.
+ */
 @ExtendWith(MockitoExtension.class)
 public class ResetPasswordServiceTest {
-    @Mock
-    private UserService userService;
 
-    @Mock
-    private PasswordEncoder passwordEncoder;
+  @Mock
+  private UserService userService;
 
-    @Mock
-    private OneTimePasswordRepository oneTimePasswordRepository;
+  @Mock
+  private PasswordEncoder passwordEncoder;
 
-    @InjectMocks
-    private ResetPasswordService resetPasswordService;
+  @Mock
+  private OneTimePasswordRepository oneTimePasswordRepository;
 
-    @Test
-    public void resetPassword_ValidToken_NewPasswordNotInHistory() {
-        ResetPasswordRequest request = new ResetPasswordRequest();
-        request.setEmail("test@example.com");
-        request.setOtp("1234");
-        request.setNewPassword("newPassword");
+  @InjectMocks
+  private ResetPasswordService resetPasswordService;
 
-        User user = new User();
-        user.setPassword("oldPassword");
+  @Test
+  public void resetPassword_ValidToken_NewPasswordNotInHistory() {
+    ResetPasswordRequest request = new ResetPasswordRequest();
+    request.setEmail("test@example.com");
+    request.setOtp("1234");
+    request.setNewPassword("newPassword");
 
-        OneTimePassword otp = new OneTimePassword();
-        otp.setUser(user);
+    User user = new User();
+    user.setPassword("oldPassword");
 
-        when(oneTimePasswordRepository.findByUserEmailAndToken(request.getEmail(), request.getOtp())).thenReturn(Optional.of(otp));
-        when(passwordEncoder.matches(request.getNewPassword(), user.getPassword())).thenReturn(false);
+    OneTimePassword otp = new OneTimePassword();
+    otp.setUser(user);
 
-        resetPasswordService.resetPassword(request);
+    when(oneTimePasswordRepository.findByUserEmailAndToken(request.getEmail(),
+        request.getOtp())).thenReturn(Optional.of(otp));
+    when(passwordEncoder.matches(request.getNewPassword(), user.getPassword())).thenReturn(false);
 
-        verify(userService, times(1)).resetPassword(user, passwordEncoder.encode(request.getNewPassword()));
-    }
+    resetPasswordService.resetPassword(request);
 
-    @Test
-    public void resetPassword_TokenNotFound_ExceptionThrown() {
-        ResetPasswordRequest request = new ResetPasswordRequest();
-        request.setEmail("test@example.com");
-        request.setOtp("1234");
-        request.setNewPassword("newPassword");
+    verify(userService, times(1)).resetPassword(user,
+        passwordEncoder.encode(request.getNewPassword()));
+  }
 
-        when(oneTimePasswordRepository.findByUserEmailAndToken(request.getEmail(), request.getOtp())).thenReturn(Optional.empty());
+  @Test
+  public void resetPassword_TokenNotFound_ExceptionThrown() {
+    ResetPasswordRequest request = new ResetPasswordRequest();
+    request.setEmail("test@example.com");
+    request.setOtp("1234");
+    request.setNewPassword("newPassword");
 
-        assertThrows(TokenNotFoundException.class, () -> resetPasswordService.resetPassword(request));
-    }
+    when(oneTimePasswordRepository.findByUserEmailAndToken(request.getEmail(),
+        request.getOtp())).thenReturn(Optional.empty());
 
-    @Test
-    public void resetPassword_NewPasswordMatchesOldPassword_ExceptionThrown() {
-        ResetPasswordRequest request = new ResetPasswordRequest();
-        request.setEmail("test@example.com");
-        request.setOtp("1234");
-        request.setNewPassword("newPassword");
+    assertThrows(TokenNotFoundException.class, () -> resetPasswordService.resetPassword(request));
+  }
 
-        User user = new User();
-        user.setPassword("newPassword");
+  @Test
+  public void resetPassword_NewPasswordMatchesOldPassword_ExceptionThrown() {
+    ResetPasswordRequest request = new ResetPasswordRequest();
+    request.setEmail("test@example.com");
+    request.setOtp("1234");
+    request.setNewPassword("newPassword");
 
-        OneTimePassword otp = new OneTimePassword();
-        otp.setUser(user);
+    User user = new User();
+    user.setPassword("newPassword");
 
-        when(oneTimePasswordRepository.findByUserEmailAndToken(request.getEmail(), request.getOtp())).thenReturn(Optional.of(otp));
-        when(passwordEncoder.matches(request.getNewPassword(), user.getPassword())).thenReturn(true);
+    OneTimePassword otp = new OneTimePassword();
+    otp.setUser(user);
 
-        assertThrows(PasswordDoesNotMeetHistoryConstraint.class, () -> resetPasswordService.resetPassword(request));
-    }
+    when(oneTimePasswordRepository.findByUserEmailAndToken(request.getEmail(),
+        request.getOtp())).thenReturn(Optional.of(otp));
+    when(passwordEncoder.matches(request.getNewPassword(), user.getPassword())).thenReturn(true);
+
+    assertThrows(PasswordDoesNotMeetHistoryConstraint.class,
+        () -> resetPasswordService.resetPassword(request));
+  }
 }
