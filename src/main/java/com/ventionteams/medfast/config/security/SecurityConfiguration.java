@@ -2,6 +2,7 @@ package com.ventionteams.medfast.config.security;
 
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
+import com.ventionteams.medfast.filter.CustomLogoutHandler;
 import com.ventionteams.medfast.filter.JwtAuthenticationFilter;
 import com.ventionteams.medfast.service.UserService;
 import java.util.List;
@@ -16,6 +17,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -33,6 +35,7 @@ import org.springframework.web.cors.CorsConfiguration;
 public class SecurityConfiguration {
 
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
+  private final CustomLogoutHandler customLogoutHandler;
   private final UserService userService;
 
   /**
@@ -57,7 +60,14 @@ public class SecurityConfiguration {
             .anyRequest().authenticated())
         .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
         .authenticationProvider(authenticationProvider())
-        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+        .logout(logout -> logout
+            .logoutUrl("/auth/logout")
+            .addLogoutHandler(customLogoutHandler)
+            .logoutSuccessHandler(((request, response, authentication) ->
+                SecurityContextHolder.clearContext()
+            ))
+        );
 
     return http.build();
   }

@@ -13,6 +13,9 @@ import java.util.Map;
 import java.util.function.Function;
 import javax.crypto.SecretKey;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +27,23 @@ import org.springframework.stereotype.Service;
 public class JwtService {
 
   private final TokenConfig tokenConfig;
+  private final CacheManager cacheManager;
+
+  @CachePut(value = "blacklistedTokens", key = "#token", unless = "#result == null")
+  public String blacklistToken(String token) {
+    return token;
+  }
+
+  /**
+   * Checks if token is present in the cache.
+   */
+  public boolean isTokenBlacklisted(String token) {
+    Cache cache = cacheManager.getCache("blacklistedTokens");
+    if (cache == null) {
+      return false;
+    }
+    return cache.get(token) != null;
+  }
 
   /**
    * Generate a JWT token for the user based on the user data.

@@ -3,10 +3,12 @@ package com.ventionteams.medfast;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.cache.annotation.EnableCaching;
 
 /**
  * Main class that starts the Spring Boot application.
  */
+@EnableCaching()
 @SpringBootApplication
 @ConfigurationPropertiesScan("com.ventionteams.medfast.config.properties")
 public class MedfastApplication {
