@@ -1,6 +1,12 @@
 package com.ventionteams.medfast.exception;
 
 import com.ventionteams.medfast.dto.response.StandardizedResponse;
+import com.ventionteams.medfast.exception.auth.InvalidTokenException;
+import com.ventionteams.medfast.exception.auth.UserNotFoundException;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.validation.ConstraintViolationException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -70,6 +76,59 @@ public class MedfastExceptionHandler {
           "Invalid value provided for parameter '" + ex.getName() + "'"
       );
     }
+
+    return response;
+  }
+
+  @ResponseStatus(HttpStatus.UNAUTHORIZED)
+  @ExceptionHandler({
+      MalformedJwtException.class,
+      SignatureException.class,
+      InvalidTokenException.class,
+      ExpiredJwtException.class
+  })
+  protected StandardizedResponse<?> handleJwtException(
+      JwtException ex) {
+    StandardizedResponse<?> response;
+
+    response = StandardizedResponse.error(
+        HttpStatus.UNAUTHORIZED.value(),
+        "Unauthorized",
+        ex.getClass().getName(),
+        ex.getMessage()
+    );
+
+    return response;
+  }
+
+  @ResponseStatus(HttpStatus.NOT_FOUND)
+  @ExceptionHandler({UserNotFoundException.class})
+  protected StandardizedResponse<?> handleUserNotFoundException(
+      RuntimeException ex) {
+    StandardizedResponse<?> response;
+
+    response = StandardizedResponse.error(
+        HttpStatus.NOT_FOUND.value(),
+        "User not found",
+        ex.getClass().getName(),
+        ex.getMessage()
+    );
+
+    return response;
+  }
+
+  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+  @ExceptionHandler({Exception.class})
+  protected StandardizedResponse<?> handleInternalServerError(
+      Exception ex) {
+    StandardizedResponse<?> response;
+
+    response = StandardizedResponse.error(
+        HttpStatus.INTERNAL_SERVER_ERROR.value(),
+        "Internal server error",
+        ex.getClass().getName(),
+        ex.getMessage()
+    );
 
     return response;
   }

@@ -3,6 +3,7 @@ package com.ventionteams.medfast.config.security;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 import com.ventionteams.medfast.filter.CustomLogoutHandler;
+import com.ventionteams.medfast.filter.FilterChainExceptionHandler;
 import com.ventionteams.medfast.filter.JwtAuthenticationFilter;
 import com.ventionteams.medfast.service.UserService;
 import java.util.List;
@@ -22,6 +23,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.CorsConfiguration;
 
 /**
@@ -37,6 +39,7 @@ public class SecurityConfiguration {
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
   private final CustomLogoutHandler customLogoutHandler;
   private final UserService userService;
+  private final FilterChainExceptionHandler filterChainExceptionHandler;
 
   /**
    * Configures the security filter chain for the application.
@@ -61,6 +64,7 @@ public class SecurityConfiguration {
         .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
         .authenticationProvider(authenticationProvider())
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+        .addFilterBefore(filterChainExceptionHandler, LogoutFilter.class)
         .logout(logout -> logout
             .logoutUrl("/auth/logout")
             .addLogoutHandler(customLogoutHandler)
