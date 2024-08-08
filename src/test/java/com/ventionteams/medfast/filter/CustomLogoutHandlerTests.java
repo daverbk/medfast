@@ -24,6 +24,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
 
+/**
+ * This class contains various test cases to ensure proper behavior of the logout handler.
+ */
 @ExtendWith(MockitoExtension.class)
 public class CustomLogoutHandlerTests {
 
