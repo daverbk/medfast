@@ -52,7 +52,7 @@ public class CustomLogoutHandlerTests {
   private Authentication authentication;
 
   @Test
-  void testLogout_Success() {
+  void logout_ValidToken_UserSuccessfullyLoggedOut() {
     String jwt = "mockJwtToken";
     String email = "user@example.com";
     User user = new User();
@@ -68,7 +68,7 @@ public class CustomLogoutHandlerTests {
   }
 
   @Test
-  void testLogout_InvalidToken() {
+  void logout_InvalidToken_InvalidTokenExceptionThrown() {
     String jwt = "invalidJwtToken";
 
     when(request.getHeader("Authorization")).thenReturn("Bearer " + jwt);
@@ -87,7 +87,7 @@ public class CustomLogoutHandlerTests {
   }
 
   @Test
-  void testLogout_NoToken() {
+  void logout_MissingToken_InvalidTokenExceptionThrown() {
     when(request.getHeader("Authorization")).thenReturn(null);
 
     InvalidTokenException thrown = assertThrows(
@@ -105,7 +105,7 @@ public class CustomLogoutHandlerTests {
   }
 
   @Test
-  void testLogout_UserNotFound() {
+  void logout_ValidToken_UserNotFound_UserNotFoundExceptionThrown() {
     String jwt = "validJwtToken";
     String email = "user@example.com";
 
