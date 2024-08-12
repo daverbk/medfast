@@ -19,4 +19,4 @@ COPY --from=extractor extracted/snapshot-dependencies/ ./
 COPY --from=extractor extracted/application/ ./
 
 EXPOSE 8080
-ENTRYPOINT ["java", "org.springframework.boot.loader.launch.JarLauncher"]
+ENTRYPOINT ["java", "-Dlogstash.host.name=logstash", "-Dlogstash.port.number=9999", "org.springframework.boot.loader.launch.JarLauncher"]

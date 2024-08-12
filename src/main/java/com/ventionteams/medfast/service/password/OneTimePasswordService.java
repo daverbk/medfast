@@ -13,11 +13,13 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
 /**
  * Service responsible for handling one-time password operations.
  */
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class OneTimePasswordService {
@@ -61,6 +63,7 @@ public class OneTimePasswordService {
     otp.setUser(user);
     otp.setToken(otpToken);
     oneTimePasswordRepository.save(otp);
+    log.info("Generated one-time password for the user with id {}", user.getId());
     return otp;
   }
 }

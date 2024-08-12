@@ -18,6 +18,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailAuthenticationException;
@@ -35,6 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Authentication controller that handles sign up, sign in, refresh token, verify email and
  * reverification of users.
  */
+@Log4j2
 @RestController
 @Validated
 @RequiredArgsConstructor
@@ -68,6 +70,7 @@ public class AuthController {
           "Sign up failed. Please, try again later or contact our support team.",
           e.getClass().getName(),
           e.getMessage());
+      log.error("Failed to sign up user with email {}", request.getEmail(), e);
     }
     return ResponseEntity.status(response.getStatus()).body(response);
   }
@@ -93,6 +96,7 @@ public class AuthController {
           "Provided credentials are bad or user is disabled",
           e.getClass().getName(),
           e.getMessage());
+      log.error("Failed to sign in user with email {}", request.getEmail(), e);
     }
     return ResponseEntity.status(response.getStatus()).body(response);
   }
@@ -117,6 +121,8 @@ public class AuthController {
           "Refreshing token failed",
           e.getClass().getName(),
           e.getMessage());
+      log.error("Failed to refresh token for user with email {}",
+          request.getRefreshToken(), e);
     }
     return ResponseEntity.status(response.getStatus()).body(response);
   }
@@ -149,6 +155,7 @@ public class AuthController {
           "We ran into an issue while verifying your email, try again please",
           e.getClass().getName(),
           e.getMessage());
+      log.error("Failed to verify email for user with email {}", email, e);
     }
     return ResponseEntity.status(response.getStatus()).body(response);
   }
@@ -174,6 +181,7 @@ public class AuthController {
           "We ran into an issue while sending another verification email, try again please",
           e.getClass().getName(),
           e.getMessage());
+      log.error("Failed to send another verification email to user with email {}", email, e);
     }
     return ResponseEntity.status(response.getStatus()).body(response);
   }

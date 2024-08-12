@@ -12,6 +12,7 @@ import com.ventionteams.medfast.service.UserService;
 import jakarta.mail.MessagingException;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.mail.MailAuthenticationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
  * Authentication service is responsible for signing up and signing in users. It can also send a
  * verification email to the user.
  */
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
@@ -44,6 +46,7 @@ public class AuthenticationService {
   public String signUp(SignUpRequest request) throws MessagingException, IOException {
     request.setPassword(passwordEncoder.encode(request.getPassword()));
     User user = userService.create(request);
+    log.info("Accepted sign up request for user with email {}", user.getEmail());
     sendVerificationEmail(user.getEmail());
     return "Email verification link has been sent to your email";
   }
@@ -84,6 +87,7 @@ public class AuthenticationService {
             request.getPassword()
         ));
 
+    log.info("Accepted sign in request for user with email {}", request.getEmail());
     UserDetails user = userService
         .getUserDetailsService()
         .loadUserByUsername(request.getEmail());

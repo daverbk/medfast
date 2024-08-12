@@ -7,6 +7,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.nio.charset.StandardCharsets;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -17,6 +18,7 @@ import org.thymeleaf.context.Context;
 /**
  * Email service responsible for sending emails to users.
  */
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class EmailService {
@@ -72,5 +74,6 @@ public class EmailService {
     helper.addInline("watermark", new ClassPathResource(WATERMARK_PATH));
 
     emailSender.send(message);
+    log.info("Email sent to {}, with subject and data: {}, {}", recipient, subject, content);
   }
 }

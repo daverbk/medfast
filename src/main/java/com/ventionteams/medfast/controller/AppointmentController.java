@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Appointment controller that handles the appointment requests.
  */
+@Log4j2
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "Appointment Controller", description = "Operations related to appointments")
@@ -58,6 +60,7 @@ public class AppointmentController {
           ex.getClass().getName(),
           ex.getMessage()
       );
+      log.error("Failed to get appointments for the user with id {}", user.getId(), ex);
     }
 
     return ResponseEntity.status(response.getStatus()).body(response);

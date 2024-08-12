@@ -8,6 +8,7 @@ import com.ventionteams.medfast.exception.auth.UserAlreadyExistsException;
 import com.ventionteams.medfast.repository.PatientRepository;
 import com.ventionteams.medfast.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Service for the User entity.
  */
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -68,12 +70,17 @@ public class UserService {
 
     user.setPerson(patient);
 
+    log.info("Attempt to create a user for {}", user.getEmail());
     return save(user);
   }
 
+  /**
+   * Resets the password for the user.
+   */
   @Transactional
   public void resetPassword(User user, String encodedPassword) {
     user.setPassword(encodedPassword);
+    log.info("Attempt to reset password for the user with id {}", user.getId());
     save(user);
   }
 

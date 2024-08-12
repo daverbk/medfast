@@ -11,12 +11,14 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Service for the user verification token entity.
  */
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class VerificationTokenService {
@@ -52,6 +54,7 @@ public class VerificationTokenService {
       user.setEnabled(true);
       userService.save(user);
       deleteVerificationToken(email);
+      log.info("The user with id {} has been verified", user.getId());
       return true;
     } else {
       return false;

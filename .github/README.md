@@ -11,7 +11,7 @@ Backend repository for MedFast project
       * [Via Docker](#via-docker)
         * [Prerequisites](#prerequisites)
         * [Steps](#steps)
-      * [Without Docker](#without-docker)
+      * [With Docker Compose for PostgreSQL and ELK stack only](#with-docker-compose-for-postgresql-and-elk-stack-only)
         * [Prerequisites](#prerequisites-1)
         * [Steps](#steps-1)
     * [Coding Style](#coding-style)
@@ -19,6 +19,7 @@ Backend repository for MedFast project
       * [How to generate reports](#how-to-generate-reports)
       * [Coverage indicators](#coverage-indicators)
       * [JaCoCo configuration](#jacoco-configuration)
+    * [Logging](#logging)
 <!-- TOC -->
 
 ## Technological Stack
@@ -84,15 +85,15 @@ docker compose up --build
 > found
 > in [the Medfast docs](https://docs.google.com/document/d/16I_MUle7IBE3wN9GDAVzZhlh00B0DSXia3hpzNTSyT8/edit#heading=h.9l37u1xea78s)
 
-#### Without Docker
+#### With Docker Compose for PostgreSQL and ELK stack only
 
 ##### Prerequisites
 
 - Java 17
-- Make sure you have PostgreSQL installed and running on your machine on port `5432` with the
-  following credentials:
-    - username: `user`
-    - password: `secret`
+- Make sure you have PostgreSQL and ELK stack up and running using docker compose file:
+    ```bash
+    docker compose up postgresql elasticsearch logstash kibana 
+    ```
 - Environment variable:
     - `MAIL_PASSWORD=medfast_email_password`
 
@@ -115,8 +116,7 @@ Run the following command in the root directory of the project
 
 ### Coding Style
 
-We are following the [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html)
-for
+We are following the [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html) for
 this project. Please make sure to follow the guidelines. They are enforced by the `checkstyle`
 plugin.
 
@@ -157,12 +157,12 @@ parts of our codebase.
 
 #### JaCoCo configuration
 
-Jacoco plugin is used for getting Code coverage Report
-<br /><br />
+Jacoco plugin is used for getting Code coverage Report. Here we can add folders to exclude from the
+check.
 
 **build.gradle.kts**
 
-```
+```kotlin
 afterEvaluate {
     classDirectories.setFrom(classDirectories.files.map {
         fileTree(it).matching {
@@ -174,12 +174,11 @@ afterEvaluate {
 }
 ```
 
-Here we can add folders to exclude from the check.
-<br /><br />
+Here we can add new rules for code coverage verification.
 
 **build.gradle.kts**
 
-```
+```kotlin
 violationRules {
     rule {
         limit {
@@ -191,5 +190,13 @@ violationRules {
 }
 ```
 
-Here we can add new rules for code coverage verification.
-<br /><br />
+### Logging
+
+We are using the ELK stack to log the application. The logs are sent to the logstash server via the
+`log4j2` appender. The logstash server then sends the logs to the elasticsearch server. The logs can
+be viewed in the kibana server. Follow the steps below to view the logs:
+
+1. Open the kibana server in the browser: [http://localhost:5601](http://localhost:5601)
+2. Go to the `Discover` tab and use the `spring-boot-*` index pattern or the `Dashboard` tab
+   and `Visual Data` dashboard
+    

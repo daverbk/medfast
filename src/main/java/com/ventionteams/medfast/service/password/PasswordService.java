@@ -11,12 +11,14 @@ import com.ventionteams.medfast.exception.password.PasswordDoesNotMeetRepetition
 import com.ventionteams.medfast.repository.OneTimePasswordRepository;
 import com.ventionteams.medfast.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 /**
  * Service responsible for handling reset password operations.
  */
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class PasswordService {
@@ -36,6 +38,8 @@ public class PasswordService {
 
     if (passwordEncoder.matches(resetPasswordRequest.getNewPassword(),
         token.getUser().getPassword())) {
+      log.error("Attempt to reset password for {}: The password has already been used before",
+          resetPasswordRequest.getEmail());
       throw new PasswordDoesNotMeetHistoryConstraint("The password has already been used before");
     }
 
@@ -44,7 +48,7 @@ public class PasswordService {
   }
 
   /**
-   * Change the password for the logged in user.
+   * Change the password for the logged-in user.
    */
   public void changePassword(User user, ChangePasswordRequest changePasswordRequest) {
     if (!passwordEncoder.matches(changePasswordRequest.getCurrentPassword(), user.getPassword())) {

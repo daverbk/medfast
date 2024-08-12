@@ -8,6 +8,7 @@ import jakarta.mail.MessagingException;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * One time password controller responsible for provisioning and verifying one time passwords.
  */
+@Log4j2
 @RestController
 @Validated
 @RequiredArgsConstructor
@@ -49,6 +51,7 @@ public class OneTimePasswordController {
           "We ran into an issue while sending a verification email, try again please",
           e.getClass().getName(),
           e.getMessage());
+      log.error("Failed to send reset password email to {}", email, e);
     }
     return ResponseEntity.status(response.getStatus()).body(response);
   }
