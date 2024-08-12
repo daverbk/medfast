@@ -2,7 +2,7 @@ package com.ventionteams.medfast.controller;
 
 import com.ventionteams.medfast.dto.request.ResetPasswordRequest;
 import com.ventionteams.medfast.dto.response.StandardizedResponse;
-import com.ventionteams.medfast.service.password.ResetPasswordService;
+import com.ventionteams.medfast.service.password.PasswordService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auth/password")
 public class ResetPasswordController {
 
-  private final ResetPasswordService resetPasswordService;
+  private final PasswordService resetPasswordService;
 
   /**
    * Reset the user's password.
