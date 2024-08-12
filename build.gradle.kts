@@ -3,6 +3,7 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 plugins {
     java
     checkstyle
+    jacoco
     id("org.springframework.boot") version "3.3.1"
     id("io.spring.dependency-management") version "1.1.5"
 }
@@ -64,4 +65,39 @@ tasks.withType<BootRun> {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    finalizedBy(tasks.jacocoTestReport)
+    finalizedBy(tasks.jacocoTestCoverageVerification)
+}
+
+tasks.withType<JacocoReport> {
+    dependsOn(tasks.test)
+
+    reports {
+        xml.required = true
+        xml.outputLocation = layout.buildDirectory.file("reports/jacoco/coverage.xml")
+        html.outputLocation = layout.buildDirectory.dir("reports/jacoco/html")
+    }
+
+    afterEvaluate {
+        classDirectories.setFrom(classDirectories.files.map {
+            fileTree(it).matching {
+                exclude("com/ventionteams/medfast/dto/**");
+                exclude("com/ventionteams/medfast/entity/*");
+                exclude("**/config/*")
+            }
+        })
+    }
+}
+
+tasks.withType<JacocoCoverageVerification> {
+    dependsOn(tasks.test)
+
+    violationRules {
+        rule {
+            limit {
+                minimum = "0.8".toBigDecimal()
+            }
+        }
+        isFailOnViolation = false
+    }
 }

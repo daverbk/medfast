@@ -15,6 +15,10 @@ Backend repository for MedFast project
         * [Prerequisites](#prerequisites-1)
         * [Steps](#steps-1)
     * [Coding Style](#coding-style)
+    * [Code coverage with tests](#code-coverage-with-tests)
+      * [How to generate reports](#how-to-generate-reports)
+      * [Coverage indicators](#coverage-indicators)
+      * [JaCoCo configuration](#jacoco-configuration)
 <!-- TOC -->
 
 ## Technological Stack
@@ -111,7 +115,8 @@ Run the following command in the root directory of the project
 
 ### Coding Style
 
-We are following the [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html) for
+We are following the [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html)
+for
 this project. Please make sure to follow the guidelines. They are enforced by the `checkstyle`
 plugin.
 
@@ -124,3 +129,67 @@ Another checkstyle-related recommendation would be to turn on real-time checking
 inspection severity to `Error` in
 the `Preferences` -> `Editor` -> `Inspections` -> `Checkstyle` -> `Checkstyle real-time scan` ->
 `Severity` -> `Error`.
+
+### Code coverage with tests
+
+For code coverage checks we will
+use
+JaCoCo. [JaCoCo - Java Code Coverage Library](https://www.jacoco.org/jacoco/trunk/index.html#:~:text=JaCoCo%20is%20a%20free%20Java,under%20the%20Eclipse%20Public%20License.)
+is a widely used tool that provides detailed reports on code coverage, helping us identify untested
+parts of our codebase.
+
+#### How to generate reports
+
+1. Build the project:
+
+    ```bash
+    ./gradlew build
+    ```
+
+2. Move to Jacoco folder and open `build/reports/jacoco/html/index.html`
+3. `index.html` will list the coverage for the complete Project
+
+#### Coverage indicators
+
+- Red : Not Covered
+- Yellow : Partially Covered
+- Green : Completely Covered
+
+#### JaCoCo configuration
+
+Jacoco plugin is used for getting Code coverage Report
+<br /><br />
+
+**build.gradle.kts**
+
+```
+afterEvaluate {
+    classDirectories.setFrom(classDirectories.files.map {
+        fileTree(it).matching {
+            exclude("com/ventionteams/medfast/dto/**");
+            exclude("com/ventionteams/medfast/entity/*");
+            exclude("**/config/*")
+        }
+    })
+}
+```
+
+Here we can add folders to exclude from the check.
+<br /><br />
+
+**build.gradle.kts**
+
+```
+violationRules {
+    rule {
+        limit {
+            minimum = "0.8".toBigDecimal()
+        }
+    }
+    // new rule
+    isFailOnViolation = false
+}
+```
+
+Here we can add new rules for code coverage verification.
+<br /><br />
