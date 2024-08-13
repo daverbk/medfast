@@ -45,6 +45,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     String jwt = authHeader.substring(BEARER_PREFIX.length());
+    if (jwtService.isTokenBlacklisted(jwt)) {
+      filterChain.doFilter(request, response);
+      return;
+    }
+
     String username = jwtService.extractUserName(jwt);
 
     if (StringUtils.isNotEmpty(username)

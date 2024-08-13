@@ -39,6 +39,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
     implementation("org.projectlombok:lombok")
+    implementation("com.github.ben-manes.caffeine:caffeine:3.1.8")
     checkstyle("com.puppycrawl.tools:checkstyle:10.17.0")
     annotationProcessor("org.projectlombok:lombok")
 
