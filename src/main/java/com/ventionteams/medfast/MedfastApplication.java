@@ -8,7 +8,7 @@ import org.springframework.cache.annotation.EnableCaching;
 /**
  * Main class that starts the Spring Boot application.
  */
-@EnableCaching()
+@EnableCaching
 @SpringBootApplication
 @ConfigurationPropertiesScan("com.ventionteams.medfast.config.properties")
 public class MedfastApplication {

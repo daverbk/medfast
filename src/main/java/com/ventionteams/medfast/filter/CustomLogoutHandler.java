@@ -43,7 +43,7 @@ public class CustomLogoutHandler implements LogoutHandler {
     String email = jwtService.extractUserName(jwt);
 
     User currentUser = userRepository.findByEmail(email).orElseThrow(() ->
-        new UserNotFoundException(email));
+        new UserNotFoundException());
     jwtService.blacklistToken(jwt);
     refreshTokenRepository.deleteByUser(currentUser);
   }
