@@ -118,7 +118,8 @@ public class CustomLogoutHandlerTests {
         () -> customLogoutHandler.logout(request, response, authentication)
     );
 
-    assertEquals("User with email 'user@example.com' not found.", thrown.getMessage());
+    assertEquals("No matching user found. If you don’t have an account, please register.",
+        thrown.getMessage());
 
     verify(jwtService, never()).blacklistToken(anyString());
     verify(refreshTokenRepository, never()).deleteByUser(any());
