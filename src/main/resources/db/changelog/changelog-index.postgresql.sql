@@ -25,3 +25,11 @@ CREATE INDEX consultation_appointments_locations__fk ON consultation_appointment
 -- changeset Uladzislau.Lukashevich:32_MED_144_Appointment
 CREATE INDEX consultation_appointments_appointment_statuses__fk ON consultation_appointments (appointment_status);
 -- rollback DROP INDEX consultation_appointments_appointment_statuses__fk;
+
+-- changeset Katarzyna.Osowska:42_MED_146_Medical_Tests
+CREATE INDEX test_appointments_patients__fk ON test_appointments (patient_id);
+-- rollback DROP INDEX test_appointments_patients__fk ;
+
+-- changeset Katarzyna.Osowska:42_MED_146_Medical_Tests
+CREATE INDEX test_appointments_doctors__fk ON test_appointments (doctor_id);
+-- rollback DROP INDEX test_appointments_doctors__fk;

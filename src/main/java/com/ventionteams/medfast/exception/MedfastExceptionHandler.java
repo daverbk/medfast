@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -52,6 +53,19 @@ public class MedfastExceptionHandler {
     });
     return StandardizedResponse.error(errors, HttpStatus.BAD_REQUEST.value(), "Validation failed",
         ex.getClass().getName(), ex.getMessage());
+  }
+
+  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+  @ExceptionHandler({InterruptedException.class})
+  protected StandardizedResponse<Map<String, String>> handleAsyncExceptions(
+      InterruptedException ex) {
+
+    return StandardizedResponse.error(
+        HttpStatus.INTERNAL_SERVER_ERROR.value(),
+        "The operation was interrupted.",
+        ex.getClass().getName(),
+        ex.getMessage()
+    );
   }
 
   @ResponseStatus(HttpStatus.BAD_REQUEST)

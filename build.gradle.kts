@@ -52,6 +52,9 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
+
+    // PDF generation
+    implementation("org.apache.pdfbox:pdfbox:2.0.32")
 }
 
 configurations.all {

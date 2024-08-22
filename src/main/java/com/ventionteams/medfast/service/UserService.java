@@ -35,6 +35,18 @@ public class UserService {
   }
 
   /**
+   * Returns a user by email and role.
+   */
+  public User getUserByEmailAndRole(String email, Role role) {
+    User user =  repository.findByEmail(email)
+        .orElseThrow(() -> new UsernameNotFoundException("User is not found"));
+    if (user.getRole() != role) {
+      throw new UsernameNotFoundException("User with " + role + " role is not found");
+    }
+    return user;
+  }
+
+  /**
    * Creates a new user based on a sign-up request.
    */
   @Transactional
