@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ventionteams.medfast.config.extension.PostgreContainerExtension;
 import com.ventionteams.medfast.dto.request.CreateMedicalTestAppointmentRequest;
 import com.ventionteams.medfast.entity.User;
 import com.ventionteams.medfast.enums.AppointmentRequestType;
@@ -22,12 +23,12 @@ import com.ventionteams.medfast.exception.medicaltest.InvalidMedicalTestDataExce
 import com.ventionteams.medfast.service.MedicalTestAppointmentService;
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
@@ -37,6 +38,7 @@ import org.springframework.test.web.servlet.ResultActions;
  */
 @SpringBootTest
 @AutoConfigureMockMvc
+@ExtendWith(PostgreContainerExtension.class)
 public class MedicalTestAppointmentControllerTest {
 
   @Autowired
@@ -86,7 +88,7 @@ public class MedicalTestAppointmentControllerTest {
   @Test
   public void getTestResult_ValidRequest_ReturnsOkAndHeaderWithContent() throws Exception {
     User mockUser = mock(User.class);
-    byte[] byteArray = new byte[] { (byte) 0xe0, 0x4f, (byte) 0xd0, 0x20 };
+    byte[] byteArray = new byte[]{(byte) 0xe0, 0x4f, (byte) 0xd0, 0x20};
 
     doReturn("test.pdf")
         .when(medicalTestAppointmentService).getPdfName(any(Long.class));
@@ -139,12 +141,11 @@ public class MedicalTestAppointmentControllerTest {
 
   @Test
   public void generateTestResultForAppointment_AppointmentNotYetTaken_ReturnsBadRequest()
-                                                                          throws Exception {
+      throws Exception {
     User mockUser = mock(User.class);
 
     doThrow(InvalidMedicalTestDataException.class).when(medicalTestAppointmentService)
         .generateTestResultFormAppointment(any(Long.class));
-
 
     ResultActions response = mockMvc.perform(post("/api/patient/tests/generate")
         .param("testAppointmentId", "-1")

@@ -1,6 +1,8 @@
 package com.ventionteams.medfast.controller;
 
 import com.ventionteams.medfast.dto.response.StandardizedResponse;
+import com.ventionteams.medfast.exception.auth.TokenExpiredException;
+import com.ventionteams.medfast.exception.auth.TokenNotFoundException;
 import com.ventionteams.medfast.service.password.OneTimePasswordService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -11,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -52,6 +55,13 @@ public class OneTimePasswordController {
           e.getClass().getName(),
           e.getMessage());
       log.error("Failed to send reset password email to {}", email, e);
+    } catch (UsernameNotFoundException e) {
+      response = StandardizedResponse.error(
+          HttpStatus.BAD_REQUEST.value(),
+          "There is no user with this email",
+          e.getClass().getName(),
+          e.getMessage());
+      log.error("Failed to send reset password email to {}", email, e);
     }
     return ResponseEntity.status(response.getStatus()).body(response);
   }
@@ -65,10 +75,28 @@ public class OneTimePasswordController {
       @Email @RequestParam("email") String email,
       @Size(min = 4, max = 4) @RequestParam("token") String token) {
 
-    oneTimePasswordService.verify(email, token);
-    return ResponseEntity.status(HttpStatus.OK).body(StandardizedResponse.ok(
-        "Token is valid",
-        HttpStatus.OK.value(),
-        "Token has been verified"));
+    StandardizedResponse<String> response;
+    try {
+      oneTimePasswordService.verify(email, token);
+      response = StandardizedResponse.ok(
+          "Token is valid",
+          HttpStatus.OK.value(),
+          "Token has been verified");
+    } catch (TokenNotFoundException e) {
+      response = StandardizedResponse.error(
+          HttpStatus.NOT_FOUND.value(),
+          "Token validation failed",
+          e.getClass().getName(),
+          e.getMessage());
+      log.error("Failed to verify token {}", token, e);
+    } catch (TokenExpiredException e) {
+      response = StandardizedResponse.error(
+          HttpStatus.BAD_REQUEST.value(),
+          "Token validation failed",
+          e.getClass().getName(),
+          e.getMessage());
+      log.error("Failed to verify token {}", token, e);
+    }
+    return ResponseEntity.status(response.getStatus()).body(response);
   }
 }

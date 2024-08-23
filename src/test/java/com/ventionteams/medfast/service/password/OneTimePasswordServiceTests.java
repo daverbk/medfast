@@ -3,7 +3,10 @@ package com.ventionteams.medfast.service.password;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -14,6 +17,9 @@ import com.ventionteams.medfast.entity.User;
 import com.ventionteams.medfast.exception.auth.TokenExpiredException;
 import com.ventionteams.medfast.exception.auth.TokenNotFoundException;
 import com.ventionteams.medfast.repository.OneTimePasswordRepository;
+import com.ventionteams.medfast.service.EmailService;
+import com.ventionteams.medfast.service.UserService;
+import jakarta.mail.MessagingException;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Random;
@@ -22,12 +28,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 /**
  * Checks the one time password service functionality with unit tests.
  */
 @ExtendWith(MockitoExtension.class)
-public class OneTimePasswordServiceTest {
+public class OneTimePasswordServiceTests {
 
   @Mock
   private OneTimePasswordRepository oneTimePasswordRepository;
@@ -37,6 +44,12 @@ public class OneTimePasswordServiceTest {
 
   @Mock
   private Random random;
+
+  @Mock
+  private UserService userService;
+
+  @Mock
+  private EmailService emailService;
 
   @InjectMocks
   private OneTimePasswordService oneTimePasswordService;
@@ -68,6 +81,22 @@ public class OneTimePasswordServiceTest {
   }
 
   @Test
+  public void verify_ValidToken_TokenVerified() {
+    String email = "test@example.com";
+    String otpToken = "1234";
+    OneTimePassword otp = new OneTimePassword();
+    otp.setCreatedDate(LocalDateTime.now().minusSeconds(30));
+
+    when(oneTimePasswordRepository.findByUserEmailAndToken(email, otpToken)).thenReturn(
+        Optional.of(otp));
+    when(tokenConfig.timeout()).thenReturn(new TokenConfig.Timeout(0, 0, 60));
+
+    oneTimePasswordService.verify(email, otpToken);
+
+    verify(oneTimePasswordRepository, never()).delete(any(OneTimePassword.class));
+  }
+
+  @Test
   public void generate_ValidUser_OtpGenerated() {
     User user = new User();
     when(random.nextInt(10000)).thenReturn(1234);
@@ -78,5 +107,33 @@ public class OneTimePasswordServiceTest {
     assertEquals(user, otp.getUser());
     assertEquals("1234", otp.getToken());
     verify(oneTimePasswordRepository, times(1)).save(any(OneTimePassword.class));
+  }
+
+  @Test
+  public void sendResetPasswordEmail_InvalidEmail_ThrowsException() {
+    String email = "test@example.com";
+
+    when(userService.getUserByEmail(anyString())).thenThrow(
+        new UsernameNotFoundException("User is not found"));
+
+    assertThrows(UsernameNotFoundException.class,
+        () -> oneTimePasswordService.sendResetPasswordEmail(email));
+  }
+
+  @Test
+  public void sendResetPasswordEmail_CorrectEmail_ThrowsException() throws MessagingException {
+    String email = "test@example.com";
+    User user = User.builder().email(email).build();
+    OneTimePassword mockOtp = new OneTimePassword();
+    mockOtp.setToken("1111");
+
+    when(userService.getUserByEmail(email)).thenReturn(user);
+    when(oneTimePasswordRepository.save(any(OneTimePassword.class))).thenReturn(mockOtp);
+    when(random.nextInt(10000)).thenReturn(1111);
+
+    oneTimePasswordService.sendResetPasswordEmail(email);
+
+    verify(emailService, times(1))
+        .sendResetPasswordEmail(eq(user), eq("1111"));
   }
 }

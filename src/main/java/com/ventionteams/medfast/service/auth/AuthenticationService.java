@@ -64,7 +64,7 @@ public class AuthenticationService {
     int maxRetries = 3;
     int retries = 0;
     boolean mailSuccessfullySent = false;
-    while (!mailSuccessfullySent && retries < maxRetries) {
+    while (!mailSuccessfullySent) {
       try {
         emailService.sendVerificationEmail(user);
         mailSuccessfullySent = true;
@@ -86,7 +86,6 @@ public class AuthenticationService {
             request.getEmail(),
             request.getPassword()
         ));
-
     log.info("Accepted sign in request for user with email {}", request.getEmail());
     UserDetails user = userService
         .getUserDetailsService()

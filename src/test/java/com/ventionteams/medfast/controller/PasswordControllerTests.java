@@ -9,12 +9,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ventionteams.medfast.config.extension.PostgreContainerExtension;
 import com.ventionteams.medfast.dto.request.ChangePasswordRequest;
 import com.ventionteams.medfast.entity.User;
 import com.ventionteams.medfast.exception.password.InvalidCurrentPasswordException;
 import com.ventionteams.medfast.exception.password.PasswordDoesNotMeetRepetitionConstraint;
 import com.ventionteams.medfast.service.password.PasswordService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,6 +30,7 @@ import org.springframework.test.web.servlet.ResultActions;
  */
 @SpringBootTest
 @AutoConfigureMockMvc
+@ExtendWith(PostgreContainerExtension.class)
 public class PasswordControllerTests {
 
   @Autowired

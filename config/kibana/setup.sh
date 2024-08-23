@@ -10,8 +10,25 @@ log_message "Starting Kibana..."
 kibana --allow-root &
 
 # Wait for Kibana to initialize
-log_message "Waiting for Kibana to start (30 seconds)..."
-sleep 30
+log_message "Waiting for Kibana to start..."
+
+# Define the maximum number of retries and the interval between checks
+MAX_RETRIES=100
+RETRY_INTERVAL=2
+RETRIES=0
+
+# Check if Kibana is ready by checking the status endpoint
+until curl -s "http://localhost:5601/api/status" | grep -q '"state":"green"'; do
+  RETRIES=$((RETRIES+1))
+  if [ "$RETRIES" -ge "$MAX_RETRIES" ]; then
+    log_message "Kibana failed to start after $((MAX_RETRIES*RETRY_INTERVAL)) seconds. Exiting..."
+    exit 1
+  fi
+  log_message "Kibana is not ready yet. Waiting $RETRY_INTERVAL seconds..."
+  sleep $RETRY_INTERVAL
+done
+
+log_message "Kibana has started successfully."
 
 # Set up the index pattern
 log_message "Setting up the index pattern from index.json..."

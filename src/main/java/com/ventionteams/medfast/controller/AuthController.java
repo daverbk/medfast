@@ -64,10 +64,17 @@ public class AuthController {
           HttpStatus.OK.value(),
           "Sign up successful");
     } catch (MessagingException | IOException
-             | MailAuthenticationException | UserAlreadyExistsException e) {
+             | MailAuthenticationException e) {
       response = StandardizedResponse.error(
           HttpStatus.INTERNAL_SERVER_ERROR.value(),
           "Sign up failed. Please, try again later or contact our support team.",
+          e.getClass().getName(),
+          e.getMessage());
+      log.error("Failed to sign up user with email {}", request.getEmail(), e);
+    } catch (UserAlreadyExistsException e) {
+      response = StandardizedResponse.error(
+          HttpStatus.BAD_REQUEST.value(),
+          "Sign up failed. User exists",
           e.getClass().getName(),
           e.getMessage());
       log.error("Failed to sign up user with email {}", request.getEmail(), e);
@@ -152,6 +159,13 @@ public class AuthController {
     } catch (TokenNotFoundException | UsernameNotFoundException e) {
       response = StandardizedResponse.error(
           HttpStatus.INTERNAL_SERVER_ERROR.value(),
+          "We ran into an issue while verifying your email, try again please",
+          e.getClass().getName(),
+          e.getMessage());
+      log.error("Failed to verify email for user with email {}", email, e);
+    } catch (UserIsAlreadyVerifiedException e) {
+      response = StandardizedResponse.error(
+          HttpStatus.CONFLICT.value(),
           "We ran into an issue while verifying your email, try again please",
           e.getClass().getName(),
           e.getMessage());

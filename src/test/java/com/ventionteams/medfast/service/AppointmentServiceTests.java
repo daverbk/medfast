@@ -24,7 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
  * Checks appointments service functionality with unit tests.
  */
 @ExtendWith(MockitoExtension.class)
-public class AppointmentServiceTest {
+public class AppointmentServiceTests {
 
   @Mock
   private AppointmentRepository appointmentRepository;
@@ -99,11 +99,40 @@ public class AppointmentServiceTest {
     when(appointmentRepository.findAllByPatientOrDoctorOrderByDateFromAsc(person.get()))
         .thenReturn(consultationAppointments);
 
-    List<AppointmentResponse> appointmentRespons = appointmentService
+    List<AppointmentResponse> appointmentResponses = appointmentService
         .getAppointments(person, amount, type);
 
-    Assertions.assertThat(appointmentRespons).isEqualTo(
+    Assertions.assertThat(appointmentResponses).isEqualTo(
         appointmentsToResponse.apply(consultationAppointments)
     );
+  }
+
+  @Test
+  void getAppointments_ZeroAmount_ReturnsAllAppointments() {
+    Optional<Person> person = Optional.ofNullable(Patient.builder()
+        .id(1L)
+        .checkboxTermsAndConditions(false)
+        .build());
+    Optional<Integer> amount = Optional.of(0);
+    AppointmentRequestType type = AppointmentRequestType.PAST;
+    List<ConsultationAppointment> consultationAppointments = List.of(
+        ConsultationAppointment.builder()
+            .dateFrom(LocalDateTime.now().minusDays(1))
+            .build(),
+        ConsultationAppointment.builder()
+            .dateFrom(LocalDateTime.now().minusDays(2))
+            .build()
+    );
+
+    when(appointmentRepository.findAllByPatientOrDoctorOrderByDateFromAsc(person.get()))
+        .thenReturn(consultationAppointments);
+
+    List<AppointmentResponse> appointmentResponses = appointmentService
+        .getAppointments(person, amount, type);
+
+    Assertions.assertThat(appointmentResponses).isEqualTo(
+        appointmentsToResponse.apply(consultationAppointments)
+    );
+
   }
 }

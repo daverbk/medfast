@@ -8,14 +8,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.ventionteams.medfast.config.extension.PostgreContainerExtension;
 import com.ventionteams.medfast.dto.response.AppointmentResponse;
 import com.ventionteams.medfast.entity.Person;
 import com.ventionteams.medfast.entity.User;
 import com.ventionteams.medfast.enums.AppointmentRequestType;
+import com.ventionteams.medfast.exception.appointment.NegativeAppointmentsAmountException;
 import com.ventionteams.medfast.service.AppointmentService;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,6 +32,7 @@ import org.springframework.test.web.servlet.ResultActions;
  */
 @SpringBootTest
 @AutoConfigureMockMvc
+@ExtendWith(PostgreContainerExtension.class)
 public class AppointmentControllerTests {
 
   @Autowired
@@ -92,6 +96,23 @@ public class AppointmentControllerTests {
         .with(user(user)));
 
     response.andExpect(jsonPath("$.data.length()").value(1)).andDo(print());
+  }
+
+  @Test
+  public void getAppointments_NegativeAmount_ReturnsBadRequest() throws Exception {
+    User mockUser = mock(User.class);
+    Person mockPerson = mock(Person.class);
+
+    when(mockUser.getPerson()).thenReturn(mockPerson);
+    when(appointmentService.getAppointments(Optional.of(mockPerson), Optional.of(-1),
+        AppointmentRequestType.UPCOMING)).thenThrow(NegativeAppointmentsAmountException.class);
+
+    ResultActions response = mockMvc.perform(get("/api/patient/appointments")
+        .param("amount", "-1")
+        .param("type", "UPCOMING")
+        .with(user(mockUser)));
+
+    response.andExpect(status().isBadRequest());
   }
 
   @Test

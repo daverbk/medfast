@@ -2,7 +2,7 @@ name: medfast
 services:
 
   postgresql:
-    image: postgres:latest
+    image: postgres:16
     environment:
       POSTGRES_DB: medfast
       POSTGRES_USER: user
@@ -58,4 +58,4 @@ services:
     depends_on:
       - elasticsearch
     command: >
-      sh -c "/usr/share/kibana/config/setup-kibana.sh"
+      sh -c "/usr/share/kibana/config/setup.sh"

@@ -40,6 +40,7 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
     implementation("org.projectlombok:lombok")
     implementation("com.github.ben-manes.caffeine:caffeine:3.1.8")
+    implementation("org.apache.pdfbox:pdfbox:2.0.32")
     checkstyle("com.puppycrawl.tools:checkstyle:10.17.0")
     annotationProcessor("org.projectlombok:lombok")
 
@@ -50,11 +51,14 @@ dependencies {
 
     // Testing
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation("org.testcontainers:junit-jupiter:1.20.1")
+    testImplementation("org.testcontainers:postgresql:1.20.1")
+    testImplementation("io.rest-assured:rest-assured:5.5.0")
+    testImplementation("net.datafaker:datafaker:2.3.1")
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
-
-    // PDF generation
-    implementation("org.apache.pdfbox:pdfbox:2.0.32")
+    testAnnotationProcessor("org.projectlombok:lombok")
 }
 
 configurations.all {
